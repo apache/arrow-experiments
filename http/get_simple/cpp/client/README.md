@@ -31,4 +31,5 @@ clang++ client.cpp -std=c++17 $(pkg-config --cflags --libs arrow libcurl) -o cli
 ./client
 ```
 
-This example requires version 15.0.0 or higher of the Arrow C++ library.
+> [!NOTE]
+> The example here requires version 15.0.0 or higher of the Arrow C++ library because of a bug ([#39163](https://github.com/apache/arrow/issues/39163)) that existed in earlier versions. If you must use an earlier version of the Arrow C++ library, it is possible to implement an HTTP client by using `arrow::ipc::RecordBatchStreamReader` instead of `arrow::ipc::StreamDecoder`. See [this example](https://github.com/apache/arrow/pull/39081/commits/3b937b98295b5dd4f9e297a865a9303a317c9983) for reference.
