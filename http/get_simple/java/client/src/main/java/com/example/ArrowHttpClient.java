@@ -34,8 +34,8 @@ public class ArrowHttpClient {
                     VectorSchemaRoot root = reader.getVectorSchemaRoot();
                     num_rows += root.getRowCount();
                     VectorUnloader unloader = new VectorUnloader(root);
-                    ArrowRecordBatch arb = unloader.getRecordBatch();
-                    batches.add(arb);
+                    ArrowRecordBatch batch = unloader.getRecordBatch();
+                    batches.add(batch);
                 }
                 
                 System.out.println(reader.bytesRead() + " bytes received");
