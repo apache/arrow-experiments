@@ -24,15 +24,15 @@ def GetPutData():
     batch = pa.record_batch(arrays, schema)
     batches = []
     
-    records_sent = 0
-    while records_sent < total_records:
-      if records_sent + length > total_records:
-        last_length = total_records - records_sent
+    records = 0
+    while records < total_records:
+      if records + length > total_records:
+        last_length = total_records - records
         batches.append(batch.slice(0, last_length))
-        records_sent += last_length
+        records += last_length
       else:
         batches.append(batch)
-        records_sent += length
+        records += length
     
     return batches
 

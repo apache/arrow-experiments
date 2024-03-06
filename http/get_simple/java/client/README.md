@@ -28,6 +28,5 @@ To run this example, first start one of the server examples in the parent direct
 
 ```sh
 mvn install
-mvn compile
 _JAVA_OPTIONS="--add-opens=java.base/java.nio=ALL-UNNAMED" mvn exec:java -Dexec.mainClass="ArrowHttpClient"
 ```
