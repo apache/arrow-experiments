@@ -30,4 +30,4 @@ If you are collaborating on the set of examples in this directory, please follow
 - Each new client example must be tested to ensure that it works with each existing server example.
 - Each new server example must be tested to ensure that it works with each existing client example.
 - To the greatest extent possible, each new server example should be functionally equivalent to each existing server example (generating equivalent data with the same schema, size, shape, and distribution of values; sending the same HTTP headers; and so on).
-- Each new client example must print timing and size information before exiting. At a minimum this must include the number of seconds elapsed (rounded to the second decimal place) and the number of record batches received.
+- Each new client example must print timing and size information before exiting. If possible this must include the number of seconds elapsed (rounded to the second decimal place) and the number of record batches received.
