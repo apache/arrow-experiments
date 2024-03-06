@@ -30,3 +30,5 @@ To run this example:
 mvn package
 _JAVA_OPTIONS="--add-opens=java.base/java.nio=ALL-UNNAMED" mvn exec:java -Dexec.mainClass="ArrowHttpServer"
 ```
+> [!NOTE]
+> For simplicity, the example here uses static class members and does not properly initialize and release resources or handle errors.
