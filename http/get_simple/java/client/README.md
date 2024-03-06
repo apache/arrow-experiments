@@ -27,6 +27,6 @@ This directory contains a minimal example of an HTTP client implemented in Java.
 To run this example, first start one of the server examples in the parent directory, then:
 
 ```sh
-mvn install
+mvn package
 _JAVA_OPTIONS="--add-opens=java.base/java.nio=ALL-UNNAMED" mvn exec:java -Dexec.mainClass="ArrowHttpClient"
 ```

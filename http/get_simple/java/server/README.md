@@ -27,6 +27,6 @@ This directory contains a minimal example of an HTTP server implemented in Java 
 To run this example:
 
 ```sh
-mvn install
+mvn package
 _JAVA_OPTIONS="--add-opens=java.base/java.nio=ALL-UNNAMED" mvn exec:java -Dexec.mainClass="ArrowHttpServer"
 ```
