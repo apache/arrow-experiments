@@ -18,6 +18,8 @@ public class ArrowHttpClient {
         String serverUrl = "http://localhost:8000";
 
         try {
+            long startTime = System.currentTimeMillis();
+
             URL url = new URL(serverUrl);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
@@ -37,10 +39,14 @@ public class ArrowHttpClient {
                     ArrowRecordBatch batch = unloader.getRecordBatch();
                     batches.add(batch);
                 }
+
+                long endTime = System.currentTimeMillis();
+                float execTime = (endTime - startTime) / 1000F; 
                 
                 System.out.println(reader.bytesRead() + " bytes received");
                 System.out.println(num_rows + " records received");
                 System.out.println(batches.size() + " record batches received");
+                System.out.printf("%.2f seconds elapsed\n", execTime);
 
                 reader.close();
             } else {
