@@ -18,11 +18,11 @@
 library(gert)
 library(arrow, warn.conflicts = FALSE)
 
-# Assumes the working directory is
+# Assumes the working directory is the root arrow-experiments
 out_stream <- file.path(getwd(), "data/arrow-commits/arrow-commits.arrows")
 out_jsonl <- file.path(getwd(), "data/arrow-commits/arrow-commits.jsonl")
 
-# ...and that an apache/arrow checkout at ../arrow
+# ...and an apache/arrow checkout at ../arrow
 commits <- withr::with_dir("../arrow", {
   gert::git_log(max = .Machine$integer.max)
 })
