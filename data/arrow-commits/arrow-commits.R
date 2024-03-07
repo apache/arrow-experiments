@@ -6,13 +6,27 @@ library(arrow, warn.conflicts = FALSE)
 out_stream <- file.path(getwd(), "data/arrow-commits/arrow-commits.arrows")
 
 # ...and that an apache/arrow checkout at ../arrow
-commits_table <- withr::with_dir("../arrow", {
-  commits <- gert::git_log(max = .Machine$integer.max)
-  commits$time <- lubridate::with_tz(commits$time, "UTC")
-  commits_table <- arrow_table(commits)
-  commits_table$metadata <- NULL
-  commits_table
+commits <- withr::with_dir("../arrow", {
+  gert::git_log(max = .Machine$integer.max)
 })
+
+# Best if names and email addresses are not included in example data
+commits$author <- NULL
+
+# Ensure times are UTC
+commits$time <- lubridate::with_tz(commits$time, "UTC")
+
+# Just take the first line of each commit message
+commits$message <- vapply(
+  commits$message,
+  function(x) strsplit(x, "\n+")[[1]][1],
+  character(1),
+  USE.NAMES = FALSE
+)
+
+# Don't include any R metadata in the example file
+commits_table <- arrow_table(commits)
+commits_table$metadata <- NULL
 
 # R bindings don't expose non-default batch size, so do the chunking manually
 batch_size <- 1024
