@@ -15,5 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-data/arrow-commits/arrow-commits.arrows filter=lfs diff=lfs merge=lfs -text
-data/arrow-commits/arrow-commits.jsonl filter=lfs diff=lfs merge=lfs -text
+data/**/*.arrows filter=lfs diff=lfs merge=lfs -text
+data/**/*.arrow filter=lfs diff=lfs merge=lfs -text
+data/**/*.jsonl filter=lfs diff=lfs merge=lfs -text
+data/**/*.parquet filter=lfs diff=lfs merge=lfs -text
