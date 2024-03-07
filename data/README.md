@@ -26,3 +26,6 @@ generated data or the testing data found in
 [apache/arrow-testing](http://github.com/apache/arrow-testing). This
 subdirectory is intended as a semi-temporary staging area: eventually,
 data here should find a permanent home elsewhere or be removed.
+
+> [!IMPORTANT]\
+> Please install and use [Git LFS](https://git-lfs.com) when contributing to this subdirectory. Add any new large file extensions to [`.gitattributes`](https://github.com/apache/arrow-experiments/blob/main/.gitattributes).
