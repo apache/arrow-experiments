@@ -68,8 +68,9 @@ stopifnot(identical(read_ipc_stream(out_stream), commits))
 # Also write a .jsonl version
 withr::with_connection(list(con = file(out_jsonl)), {
   open(con, "w")
-  for (item in purrr::transpose(commits)) {
-    line <- jsonlite::toJSON(item, auto_unbox = TRUE)
+  for (i in seq_len(nrow(commits))) {
+    item <- as.list(commits[i, , drop = FALSE])
+    line <- jsonlite::toJSON(item, POSIXt = "ISO8601", auto_unbox = TRUE)
     writeLines(line, con)
   }
 })
