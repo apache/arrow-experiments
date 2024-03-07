@@ -20,6 +20,7 @@ library(arrow, warn.conflicts = FALSE)
 
 # Assumes the working directory is
 out_stream <- file.path(getwd(), "data/arrow-commits/arrow-commits.arrows")
+out_jsonl <- file.path(getwd(), "data/arrow-commits/arrow-commits.jsonl")
 
 # ...and that an apache/arrow checkout at ../arrow
 commits <- withr::with_dir("../arrow", {
@@ -40,7 +41,7 @@ commits$message <- vapply(
   USE.NAMES = FALSE
 )
 
-# Don't include any R metadata in the example file
+# Don't include any R metadata in the example Arrow file
 commits_table <- arrow_table(commits)
 commits_table$metadata <- NULL
 
@@ -61,5 +62,14 @@ for (i in seq_len(num_batches)) {
 }
 writer$close()
 
-# Check a simple read of the file
+# Check a simple read of the Arrow stream
 stopifnot(identical(read_ipc_stream(out_stream), commits))
+
+# Also write a .jsonl version
+withr::with_connection(list(con = file(out_jsonl)), {
+  open(con, "w")
+  for (item in purrr::transpose(commits)) {
+    line <- jsonlite::toJSON(item, auto_unbox = TRUE)
+    writeLines(line, con)
+  }
+})
