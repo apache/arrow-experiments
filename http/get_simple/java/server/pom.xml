@@ -20,7 +20,7 @@
 
     <properties>
         <arrow.version>15.0.0</arrow.version>
-        <jetty.version>11.0.3</jetty.version>
+        <jetty.version>11.0.14</jetty.version>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
     </properties>
