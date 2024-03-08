@@ -17,16 +17,15 @@
   under the License.
 -->
 
-# HTTP GET Arrow Data: Simple Java Client Example
+# Apache Arrow Data Experiments
 
-This directory contains a minimal example of an HTTP client implemented in Java. The client:
-1. Sends an HTTP GET request to a server.
-2. Receives an HTTP 200 response from the server, with the response body containing an Arrow IPC stream of record batches.
-3. Adds the record batches to a list as they are received.
+This subdirectory contains experimental Arrow data whose purpose has not
+yet become clear but may be useful in the future. This currently includes
+data used to generate compelling examples that is more realistic than
+generated data or the testing data found in
+[apache/arrow-testing](http://github.com/apache/arrow-testing). This
+subdirectory is intended as a semi-temporary staging area: eventually,
+data here should find a permanent home elsewhere or be removed.
 
-To run this example, first start one of the server examples in the parent directory, then:
-
-```sh
-mvn package
-_JAVA_OPTIONS="--add-opens=java.base/java.nio=ALL-UNNAMED" mvn exec:java -Dexec.mainClass="ArrowHttpClient"
-```
+> [!IMPORTANT]
+> Please install and use [Git LFS](https://git-lfs.com) when contributing to this subdirectory. Add any new large file extensions to [`.gitattributes`](https://github.com/apache/arrow-experiments/blob/main/.gitattributes).

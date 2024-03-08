@@ -17,16 +17,18 @@
   under the License.
 -->
 
-# HTTP GET Arrow Data: Simple Java Client Example
+# HTTP GET Arrow Data: Simple Java Server Example
 
-This directory contains a minimal example of an HTTP client implemented in Java. The client:
-1. Sends an HTTP GET request to a server.
-2. Receives an HTTP 200 response from the server, with the response body containing an Arrow IPC stream of record batches.
-3. Adds the record batches to a list as they are received.
+This directory contains a minimal example of an HTTP server implemented in Java using the Jetty web server. The server:
+1. Creates a list of record batches and populates it with synthesized data.
+2. Listens for HTTP GET requests from clients.
+3. Upon receiving a request, sends an HTTP 200 response with the body containing an Arrow IPC stream of record batches.
 
-To run this example, first start one of the server examples in the parent directory, then:
+To run this example:
 
 ```sh
 mvn package
-_JAVA_OPTIONS="--add-opens=java.base/java.nio=ALL-UNNAMED" mvn exec:java -Dexec.mainClass="ArrowHttpClient"
+_JAVA_OPTIONS="--add-opens=java.base/java.nio=ALL-UNNAMED" mvn exec:java -Dexec.mainClass="ArrowHttpServer"
 ```
+> [!NOTE]
+> For simplicity, the example here uses static class members and does not properly initialize and release resources or handle errors.
