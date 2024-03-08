@@ -43,14 +43,17 @@ fn main() {
                         .unwrap();
 
                     // Ignore response header.
-                    for _ in BufReader::new(&mut stream)
-                        .lines()
-                        .take_while(|line| line.as_ref().is_ok_and(|line| !line.is_empty()))
-                    {
+                    let mut reader = BufReader::new(&mut stream);
+                    loop {
+                        let mut line = String::default();
+                        reader.read_line(&mut line).unwrap();
+                        if line == "\r\n" {
+                            break;
+                        }
                     }
 
                     // Read Arrow IPC stream
-                    let reader = StreamReader::try_new(stream, None).unwrap();
+                    let reader = StreamReader::try_new_unbuffered(reader, None).unwrap();
                     let batches = reader.flat_map(Result::ok).collect::<Vec<_>>();
 
                     info!(
