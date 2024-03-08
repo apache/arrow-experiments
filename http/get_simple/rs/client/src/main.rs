@@ -37,7 +37,9 @@ fn main() {
                 info!("Connected");
 
                 // Send request.
-                stream.write_all("GET HTTP/1.0\r\n\r\n".as_bytes()).unwrap();
+                stream
+                    .write_all("GET / HTTP/1.0\r\n\r\n".as_bytes())
+                    .unwrap();
 
                 // Ignore response header.
                 for _ in BufReader::new(&mut stream)
