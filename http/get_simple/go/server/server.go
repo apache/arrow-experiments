@@ -95,8 +95,10 @@ func main() {
 
 		hdrs := w.Header()
 
-		// set these headers if testing with a local browser-based client:
+		//// set this header to disable chunked transfer encoding:
+		//hdrs.Add("Transfer-Encoding", "identity")
 
+		//// set these headers if testing with a local browser-based client:
 		//hdrs.Add("Access-Control-Allow-Origin", "http://localhost:8000")
 		//hdrs.Add("Access-Control-Allow-Methods", "GET")
 		//hdrs.Add("Access-Control-Allow-Headers", "content-type")
