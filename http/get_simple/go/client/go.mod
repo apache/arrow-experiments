@@ -2,7 +2,7 @@ module client
 
 go 1.21.5
 
-require github.com/apache/arrow/go/v15 v15.0.0
+require github.com/apache/arrow/go/v15 v15.0.1
 
 require (
 	github.com/goccy/go-json v0.10.2 // indirect
