@@ -76,11 +76,13 @@ class MyServer(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-Type', 'application/vnd.apache.arrow.stream')
         
-        # set these headers if testing with a local browser-based client:
-        
+        ### set these headers if testing with a local browser-based client:
         #self.send_header('Access-Control-Allow-Origin', 'http://localhost:8000')
         #self.send_header('Access-Control-Allow-Methods', 'GET')
         #self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        
+        ### set this header to make browsers download the file with a name and extension:
+        #self.send_header('Content-Disposition', 'attachment; filename="data.arrows"')
         
         self.end_headers()
         
@@ -88,10 +90,9 @@ class MyServer(BaseHTTPRequestHandler):
             self.wfile.write(buffer)
             self.wfile.flush()
             
-            # if any record batch could be larger than 2 GB, split it
-            # into chunks before passing to self.wfile.write() by 
-            # replacing the two lines above with this:
-            
+            ### if any record batch could be larger than 2 GB, split it
+            ### into chunks before passing to self.wfile.write() by 
+            ### replacing the two lines above with this:
             #chunk_size = int(2e9)
             #chunk_splits = len(buffer) // chunk_size
             #for i in range(chunk_splits):
