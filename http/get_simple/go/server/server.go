@@ -97,11 +97,11 @@ func main() {
 
 		// set these headers if testing with a local browser-based client:
 
-		//hdrs.Add("access-control-allow-origin", "http://localhost:8000")
-		//hdrs.Add("access-control-allow-methods", "GET")
-		//hdrs.Add("access-control-allow-headers", "content-type")
+		//hdrs.Add("Access-Control-Allow-Origin", "http://localhost:8000")
+		//hdrs.Add("Access-Control-Allow-Methods", "GET")
+		//hdrs.Add("Access-Control-Allow-Headers", "content-type")
 
-		hdrs.Add("content-type", "application/vnd.apache.arrow.stream")
+		hdrs.Add("Content-Type", "application/vnd.apache.arrow.stream")
 		w.WriteHeader(http.StatusOK)
 
 		wr := ipc.NewWriter(w, ipc.WithSchema(batches[0].Schema()))
