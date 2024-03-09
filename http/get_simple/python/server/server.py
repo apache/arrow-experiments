@@ -100,15 +100,25 @@ class MyServer(BaseHTTPRequestHandler):
                 self.wfile.write('\r\n'.encode('utf-8'))
             self.wfile.flush()
             
-            ### if any record batch could be larger than 2 GB, split it
-            ### into chunks before passing to self.wfile.write() by 
-            ### replacing the two lines above with this:
+            ### if any record batch could be larger than 2 GB, Python's
+            ### http.server will error when calling self.wfile.write(),
+            ### so you will need to split them into smaller chunks by 
+            ### replacing the six lines above with this:
             #chunk_size = int(2e9)
             #chunk_splits = len(buffer) // chunk_size
             #for i in range(chunk_splits):
+            #    if chunked:
+            #        self.wfile.write('{:X}\r\n'.format(chunk_size).encode('utf-8'))
             #    self.wfile.write(buffer[i * chunk_size:i * chunk_size + chunk_size])
+            #    if chunked:
+            #        self.wfile.write('\r\n'.encode('utf-8'))
             #    self.wfile.flush()
+            #last_chunk_size = len(buffer) - (chunk_splits * chunk_size)
+            #if chunked:
+            #    self.wfile.write('{:X}\r\n'.format(last_chunk_size).encode('utf-8'))
             #self.wfile.write(buffer[chunk_splits * chunk_size:])
+            #if chunked:
+            #    self.wfile.write('\r\n'.encode('utf-8'))
             #self.wfile.flush()
         
         if chunked:
