@@ -23,6 +23,8 @@ This directory contains a set of minimal examples of HTTP clients and servers im
 - How a client can send a GET request to a server and receive a response from the server containing an Arrow IPC stream of record batches.
 - How a server can respond to a GET request from a client and send the client a response containing an Arrow IPC stream of record batches.
 
+The examples here assume that the server cannot determine the exact length in bytes of the full Arrow IPC stream before sending it, so they cannot set the `Content-Length` header or serve Range requests.
+
 To enable performance comparisons to Arrow Flight RPC, the server examples generate the data in exactly the same way as in [`flight_benchmark.cc`](https://github.com/apache/arrow/blob/7346bdffbdca36492089f6160534bfa2b81bad90/cpp/src/arrow/flight/flight_benchmark.cc#L194-L245) as cited in the [original blog post introducing Flight RPC](https://arrow.apache.org/blog/2019/10/13/introducing-arrow-flight/). But note that Flight example sends four concurrent streams.
 
 If you are collaborating on the set of examples in this directory, please follow these guidelines:

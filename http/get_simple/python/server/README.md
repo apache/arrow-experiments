@@ -30,3 +30,6 @@ To run this example:
 pip install pyarrow
 python server.py
 ```
+
+> [!NOTE]  
+> This example uses Python's built-in [`http.server`](https://docs.python.org/3/library/http.server.html) module. This server does not implement chunked transfer encoding automatically like more sophisticated HTTP servers do, so this example implements it manually, with each chunk consisting of one Arrow record batch. Note that in servers that implement chunked transfer encoding automatically, each chunk will generally not correspond to one Arrow record batch.
