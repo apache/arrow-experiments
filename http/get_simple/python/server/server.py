@@ -74,13 +74,14 @@ def generate_batches(schema, reader):
  
 class MyServer(BaseHTTPRequestHandler):
     def do_GET(self):
-        if self.request_version == "HTTP/1.0":
+
+        if self.request_version == 'HTTP/1.0':
             self.protocol_version = 'HTTP/1.0'
             chunked = False
         else:
             self.protocol_version = 'HTTP/1.1'
             chunked = chunked_encoding
-
+        
         self.close_connection = True
         self.send_response(200)
         self.send_header('Content-Type', 'application/vnd.apache.arrow.stream')
