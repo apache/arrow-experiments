@@ -58,8 +58,6 @@ def make_reader(schema, batches):
 
 def generate_batches(schema, reader):
     with io.BytesIO() as sink, pa.ipc.new_stream(sink, schema) as writer:
-        yield sink.getvalue()
-        
         for batch in reader:
             sink.seek(0)
             sink.truncate(0)
@@ -72,7 +70,9 @@ def generate_batches(schema, reader):
         yield sink.getvalue()
  
 class MyServer(BaseHTTPRequestHandler):
+    protocol_version = 'HTTP/1.1'
     def do_GET(self):
+        self.close_connection = True
         self.send_response(200)
         self.send_header('Content-Type', 'application/vnd.apache.arrow.stream')
         
