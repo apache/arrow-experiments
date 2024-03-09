@@ -103,7 +103,10 @@ class MyServer(BaseHTTPRequestHandler):
 batches = GetPutData()
 
 server_address = ('localhost', 8000)
-httpd = HTTPServer(server_address, MyServer)
-
-print(f'Serving on {server_address[0]}:{server_address[1]}...')
-httpd.serve_forever()
+try:
+    httpd = HTTPServer(server_address, MyServer)
+    print(f'Serving on {server_address[0]}:{server_address[1]}...')
+    httpd.serve_forever()
+except KeyboardInterrupt:
+    print('Shutting down server')
+    httpd.socket.close()
