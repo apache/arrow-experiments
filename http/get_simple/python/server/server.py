@@ -20,6 +20,9 @@ from random import randbytes
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import io
 
+# use chunked transfer encoding?
+chunked = True
+
 schema = pa.schema([
     ('a', pa.int64()),
     ('b', pa.int64()),
@@ -84,10 +87,17 @@ class MyServer(BaseHTTPRequestHandler):
         ### set this header to make browsers download the file with a name and extension:
         #self.send_header('Content-Disposition', 'attachment; filename="data.arrows"')
         
+        if chunked:
+            self.send_header('Transfer-Encoding', 'chunked')
+        
         self.end_headers()
         
         for buffer in generate_batches(schema, make_reader(schema, batches)):
+            if chunked:
+                self.wfile.write('{:X}\r\n'.format(len(buffer)).encode('utf-8'))
             self.wfile.write(buffer)
+            if chunked:
+                self.wfile.write('\r\n'.encode('utf-8'))
             self.wfile.flush()
             
             ### if any record batch could be larger than 2 GB, split it
@@ -100,6 +110,10 @@ class MyServer(BaseHTTPRequestHandler):
             #    self.wfile.flush()
             #self.wfile.write(buffer[chunk_splits * chunk_size:])
             #self.wfile.flush()
+        
+        if chunked:
+            self.wfile.write('0\r\n\r\n'.encode('utf-8'))
+            self.wfile.flush()
 
 batches = GetPutData()
 
