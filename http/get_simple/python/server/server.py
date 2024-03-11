@@ -20,6 +20,9 @@ from random import randbytes
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import io
 
+# use chunked transfer encoding?
+chunked_encoding = True
+
 schema = pa.schema([
     ('a', pa.int64()),
     ('b', pa.int64()),
@@ -58,8 +61,6 @@ def make_reader(schema, batches):
 
 def generate_batches(schema, reader):
     with io.BytesIO() as sink, pa.ipc.new_stream(sink, schema) as writer:
-        yield sink.getvalue()
-        
         for batch in reader:
             sink.seek(0)
             sink.truncate(0)
@@ -73,37 +74,71 @@ def generate_batches(schema, reader):
  
 class MyServer(BaseHTTPRequestHandler):
     def do_GET(self):
+
+        if self.request_version == 'HTTP/1.0':
+            self.protocol_version = 'HTTP/1.0'
+            chunked = False
+        else:
+            self.protocol_version = 'HTTP/1.1'
+            chunked = chunked_encoding
+        
+        self.close_connection = True
         self.send_response(200)
         self.send_header('Content-Type', 'application/vnd.apache.arrow.stream')
         
-        # set these headers if testing with a local browser-based client:
-        
+        ### set these headers if testing with a local browser-based client:
         #self.send_header('Access-Control-Allow-Origin', 'http://localhost:8000')
         #self.send_header('Access-Control-Allow-Methods', 'GET')
         #self.send_header('Access-Control-Allow-Headers', 'Content-Type')
         
+        ### set this header to make browsers download the file with a name and extension:
+        #self.send_header('Content-Disposition', 'attachment; filename="data.arrows"')
+        
+        if chunked:
+            self.send_header('Transfer-Encoding', 'chunked')
+        
         self.end_headers()
         
         for buffer in generate_batches(schema, make_reader(schema, batches)):
+            if chunked:
+                self.wfile.write('{:X}\r\n'.format(len(buffer)).encode('utf-8'))
             self.wfile.write(buffer)
+            if chunked:
+                self.wfile.write('\r\n'.encode('utf-8'))
             self.wfile.flush()
             
-            # if any record batch could be larger than 2 GB, split it
-            # into chunks before passing to self.wfile.write() by 
-            # replacing the two lines above with this:
-            
+            ### if any record batch could be larger than 2 GB, Python's
+            ### http.server will error when calling self.wfile.write(),
+            ### so you will need to split them into smaller chunks by 
+            ### replacing the six lines above with this:
             #chunk_size = int(2e9)
             #chunk_splits = len(buffer) // chunk_size
             #for i in range(chunk_splits):
+            #    if chunked:
+            #        self.wfile.write('{:X}\r\n'.format(chunk_size).encode('utf-8'))
             #    self.wfile.write(buffer[i * chunk_size:i * chunk_size + chunk_size])
+            #    if chunked:
+            #        self.wfile.write('\r\n'.encode('utf-8'))
             #    self.wfile.flush()
+            #last_chunk_size = len(buffer) - (chunk_splits * chunk_size)
+            #if chunked:
+            #    self.wfile.write('{:X}\r\n'.format(last_chunk_size).encode('utf-8'))
             #self.wfile.write(buffer[chunk_splits * chunk_size:])
+            #if chunked:
+            #    self.wfile.write('\r\n'.encode('utf-8'))
             #self.wfile.flush()
+        
+        if chunked:
+            self.wfile.write('0\r\n\r\n'.encode('utf-8'))
+            self.wfile.flush()
 
 batches = GetPutData()
 
 server_address = ('localhost', 8000)
-httpd = HTTPServer(server_address, MyServer)
-
-print(f'Serving on {server_address[0]}:{server_address[1]}...')
-httpd.serve_forever()
+try:
+    httpd = HTTPServer(server_address, MyServer)
+    print(f'Serving on {server_address[0]}:{server_address[1]}...')
+    httpd.serve_forever()
+except KeyboardInterrupt:
+    print('Shutting down server')
+    httpd.socket.close()
