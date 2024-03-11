@@ -30,3 +30,5 @@ To run this example:
 ```sh
 cargo r --release
 ```
+> [!NOTE]  
+> This server example implements low-level HTTP/1.1 details directly, instead of using an HTTP library. We intend to update the example to use [hyper](https://docs.rs/hyper/latest/hyper/) after [arrow-rs has an async Arrow IPC writer](https://github.com/apache/arrow-rs/issues/1207)).

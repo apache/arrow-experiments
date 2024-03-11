@@ -30,3 +30,5 @@ To run this example, first start one of the server examples in the parent direct
 ```sh
 cargo r --release
 ```
+> [!NOTE]  
+> This client example implements low-level HTTP/1.1 details directly, instead of using an HTTP library. We intend to update the example to use [hyper](https://docs.rs/hyper/latest/hyper/) after [arrow-rs has an async Arrow IPC reader](https://github.com/apache/arrow-rs/issues/1207)).
