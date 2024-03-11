@@ -21,7 +21,7 @@ import time
 
 start_time = time.time()
 
-with urllib.request.urlopen('http://localhost:8000') as response:
+with urllib.request.urlopen('http://localhost:8008') as response:
   buffer = response.read()
 
 batches = []

@@ -28,7 +28,7 @@ import (
 
 func main() {
 	start := time.Now()
-	resp, err := http.Get("http://localhost:8000")
+	resp, err := http.Get("http://localhost:8008")
 	if err != nil {
 		panic(err)
 	}

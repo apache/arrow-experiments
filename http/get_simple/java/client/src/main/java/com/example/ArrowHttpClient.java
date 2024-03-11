@@ -32,7 +32,7 @@ import java.util.ArrayList;
 public class ArrowHttpClient {
 
     public static void main(String[] args) {
-        String serverUrl = "http://localhost:8000";
+        String serverUrl = "http://localhost:8008";
 
         try {
             long startTime = System.currentTimeMillis();
