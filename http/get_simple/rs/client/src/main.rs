@@ -17,7 +17,7 @@
 
 use arrow_ipc::reader::StreamReader;
 use std::{
-    io::{BufRead, BufReader, Write},
+    io::{BufRead, BufReader, Read, Write},
     net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream},
 };
 use tracing::{error, info, info_span};
@@ -39,22 +39,58 @@ fn main() {
 
                     // Send request.
                     stream
-                        .write_all("GET / HTTP/1.0\r\n\r\n".as_bytes())
+                        .write_all(format!("GET / HTTP/1.1\r\nHost: {addr}\r\n\r\n").as_bytes())
                         .unwrap();
 
                     // Ignore response header.
                     let mut reader = BufReader::new(&mut stream);
+                    let mut chunked = false;
                     loop {
                         let mut line = String::default();
                         reader.read_line(&mut line).unwrap();
+                        if let Some(("transfer-encoding", "chunked")) = line
+                            .to_lowercase()
+                            .split_once(':')
+                            .map(|(key, value)| (key.trim(), value.trim()))
+                        {
+                            chunked = true;
+                        }
                         if line == "\r\n" {
                             break;
                         }
                     }
 
                     // Read Arrow IPC stream
-                    let reader = StreamReader::try_new_unbuffered(reader, None).unwrap();
-                    let batches = reader.flat_map(Result::ok).collect::<Vec<_>>();
+                    let batches: Vec<_> = if chunked {
+                        let mut buffer = Vec::default();
+                        loop {
+                            // Chunk size
+                            let mut line = String::default();
+                            reader.read_line(&mut line).unwrap();
+                            let chunk_size = u64::from_str_radix(line.trim(), 16).unwrap();
+
+                            if chunk_size == 0 {
+                                // Terminating chunk
+                                break;
+                            } else {
+                                // Append chunk to buffer
+                                let mut chunk_reader = reader.take(chunk_size);
+                                chunk_reader.read_to_end(&mut buffer).unwrap();
+                                // Terminating CR-LF sequence
+                                reader = chunk_reader.into_inner();
+                                reader.read_line(&mut String::default()).unwrap();
+                            }
+                        }
+                        StreamReader::try_new_unbuffered(buffer.as_slice(), None)
+                            .unwrap()
+                            .flat_map(Result::ok)
+                            .collect()
+                    } else {
+                        StreamReader::try_new_unbuffered(reader, None)
+                            .unwrap()
+                            .flat_map(Result::ok)
+                            .collect()
+                    };
 
                     info!(
                         batches = batches.len(),
