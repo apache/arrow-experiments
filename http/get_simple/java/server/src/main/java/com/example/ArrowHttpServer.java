@@ -143,10 +143,10 @@ public class ArrowHttpServer extends AbstractHandler {
     public static void main(String[] args) throws Exception {
         batches = getPutData();
 
-        Server server = new Server(8000);
+        Server server = new Server(8008);
         server.setHandler(new ArrowHttpServer());
         server.start();
-        System.out.println("Serving on localhost:8000...");
+        System.out.println("Serving on localhost:8008...");
         server.join();
     }
     

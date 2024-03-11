@@ -19,7 +19,7 @@ library(httr)
 library(tictoc)
 suppressPackageStartupMessages(library(arrow))
 
-url <- 'http://localhost:8000'
+url <- 'http://localhost:8008'
 
 tic()
 

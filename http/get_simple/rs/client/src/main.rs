@@ -31,7 +31,7 @@ fn main() {
 
     info_span!("get_simple").in_scope(|| {
         // Connect to server.
-        let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), 8000);
+        let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), 8008);
         match TcpStream::connect(addr) {
             Ok(mut stream) => {
                 info_span!("Reading Arrow IPC stream", %addr).in_scope(|| {

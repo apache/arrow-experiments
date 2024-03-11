@@ -114,7 +114,7 @@ fn main() -> Result<()> {
     let _ = Lazy::force(&DATA);
 
     // Start listening.
-    let bind_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), 8000);
+    let bind_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), 8008);
     let listener = TcpListener::bind(bind_addr)?;
     info!(%bind_addr, "Listening");
 

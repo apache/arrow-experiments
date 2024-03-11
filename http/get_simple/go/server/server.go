@@ -99,7 +99,7 @@ func main() {
 		//hdrs.Add("Transfer-Encoding", "identity")
 
 		//// set these headers if testing with a local browser-based client:
-		//hdrs.Add("Access-Control-Allow-Origin", "http://localhost:8000")
+		//hdrs.Add("Access-Control-Allow-Origin", "http://localhost:8008")
 		//hdrs.Add("Access-Control-Allow-Methods", "GET")
 		//hdrs.Add("Access-Control-Allow-Headers", "content-type")
 
@@ -116,6 +116,6 @@ func main() {
 		}
 	})
 
-	fmt.Println("Serving on localhost:8000...")
-	log.Fatal(http.ListenAndServe(":8000", nil))
+	fmt.Println("Serving on localhost:8008...")
+	log.Fatal(http.ListenAndServe(":8008", nil))
 }

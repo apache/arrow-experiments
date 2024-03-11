@@ -29,7 +29,7 @@ main(int argc, char **argv)
 
   SoupSession *session = soup_session_new();
   SoupMessage *message = soup_message_new(SOUP_METHOD_GET,
-                                          "http://localhost:8000");
+                                          "http://localhost:8008");
 
   GTimer *timer = g_timer_new();
 

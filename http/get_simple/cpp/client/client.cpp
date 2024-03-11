@@ -35,7 +35,7 @@ WriteFunction(void *contents, size_t size, size_t nmemb, void *userp)
 
 int main(void)
 {
-  std::string url = "http://localhost:8000";
+  std::string url = "http://localhost:8008";
 
   CURL *curl_handle;
   CURLcode res;

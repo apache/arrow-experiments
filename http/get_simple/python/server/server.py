@@ -87,7 +87,7 @@ class MyServer(BaseHTTPRequestHandler):
         self.send_header('Content-Type', 'application/vnd.apache.arrow.stream')
         
         ### set these headers if testing with a local browser-based client:
-        #self.send_header('Access-Control-Allow-Origin', 'http://localhost:8000')
+        #self.send_header('Access-Control-Allow-Origin', 'http://localhost:8008')
         #self.send_header('Access-Control-Allow-Methods', 'GET')
         #self.send_header('Access-Control-Allow-Headers', 'Content-Type')
         
@@ -134,7 +134,7 @@ class MyServer(BaseHTTPRequestHandler):
 
 batches = GetPutData()
 
-server_address = ('localhost', 8000)
+server_address = ('localhost', 8008)
 try:
     httpd = HTTPServer(server_address, MyServer)
     print(f'Serving on {server_address[0]}:{server_address[1]}...')

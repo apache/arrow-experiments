@@ -17,7 +17,7 @@
 
 const Arrow = require('apache-arrow');
 
-const url = 'http://localhost:8000';
+const url = 'http://localhost:8008';
 
 async function runExample(url) {
   const startTime = new Date();
