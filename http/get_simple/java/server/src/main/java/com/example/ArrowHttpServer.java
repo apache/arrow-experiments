@@ -118,6 +118,11 @@ public class ArrowHttpServer extends AbstractHandler {
         response.setContentType("application/vnd.apache.arrow.stream");
         response.setStatus(HttpServletResponse.SC_OK);
 
+        //// set this header to disable chunked transfer encoding:
+        //response.setHeader("Connection", "close");
+        
+        response.flushBuffer();
+
         try (
             OutputStream stream = response.getOutputStream();
             VectorSchemaRoot root = VectorSchemaRoot.create(schema, allocator);
