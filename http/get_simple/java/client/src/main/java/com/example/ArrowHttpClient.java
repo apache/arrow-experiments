@@ -19,6 +19,7 @@ import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.memory.RootAllocator;
 import org.apache.arrow.vector.VectorSchemaRoot;
 import org.apache.arrow.vector.VectorUnloader;
+import org.apache.arrow.vector.types.pojo.Schema;
 import org.apache.arrow.vector.ipc.ArrowStreamReader;
 import org.apache.arrow.vector.ipc.message.ArrowRecordBatch;
 
@@ -46,11 +47,13 @@ public class ArrowHttpClient {
 
                 BufferAllocator allocator = new RootAllocator(Long.MAX_VALUE);
                 ArrowStreamReader reader = new ArrowStreamReader(inputStream, allocator);
+                VectorSchemaRoot root = reader.getVectorSchemaRoot();
+                
+                Schema schema = root.getSchema();
                 List<ArrowRecordBatch> batches = new ArrayList<>();
 
                 int num_rows = 0;
                 while (reader.loadNextBatch()) { 
-                    VectorSchemaRoot root = reader.getVectorSchemaRoot();
                     num_rows += root.getRowCount();
                     VectorUnloader unloader = new VectorUnloader(root);
                     ArrowRecordBatch batch = unloader.getRecordBatch();
