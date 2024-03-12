@@ -48,6 +48,7 @@ public class ArrowHttpClient {
                 BufferAllocator allocator = new RootAllocator(Long.MAX_VALUE);
                 ArrowStreamReader reader = new ArrowStreamReader(inputStream, allocator);
                 VectorSchemaRoot root = reader.getVectorSchemaRoot();
+                VectorUnloader unloader = new VectorUnloader(root);
                 
                 Schema schema = root.getSchema();
                 List<ArrowRecordBatch> batches = new ArrayList<>();
@@ -55,7 +56,6 @@ public class ArrowHttpClient {
                 int num_rows = 0;
                 while (reader.loadNextBatch()) { 
                     num_rows += root.getRowCount();
-                    VectorUnloader unloader = new VectorUnloader(root);
                     ArrowRecordBatch batch = unloader.getRecordBatch();
                     batches.add(batch);
                 }
