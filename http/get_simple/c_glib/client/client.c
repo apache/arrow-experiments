@@ -33,7 +33,7 @@ main(int argc, char **argv)
   /* Disable keep-alive explicitly. (libsoup uses keep-alive by
    * default.)
    *
-   * In general, keep-alive will improve performance when we sends
+   * In general, keep-alive will improve performance when we send
    * many GET requests to the same server. But in this case, we send
    * only one GET request. So we don't need keep-alive here.
    */
