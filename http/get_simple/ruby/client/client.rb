@@ -23,17 +23,11 @@ port = 8008
 url = URI("http://#{host}:#{port}")
 
 # Non-streaming
-resp = Net::HTTP.get(url)
-
-StringIO.open(resp) do |stringio_input|
-  Gio::RubyInputStream.open(stringio_input) do |gio_input|
-    Arrow::GIOInputStream.open(gio_input) do |arrow_input|
-      reader = Arrow::RecordBatchStreamReader.new(arrow_input)
-
-      p reader.schema
-      p reader.read_all
-    end
-  end
+url.open do |input|
+  input = Arrow::BufferInputStream.new(input.read)
+  reader = Arrow::RecordBatchStreamReader.new(input)
+  p reader.schema
+  p reader.read_all
 end
 
 # Streaming
