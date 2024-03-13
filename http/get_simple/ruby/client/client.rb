@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-require "net/http"
+require "open-uri"
 require "stringio"
 require "arrow"
 
