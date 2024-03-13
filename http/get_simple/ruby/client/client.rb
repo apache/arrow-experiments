@@ -37,25 +37,32 @@ StringIO.open(resp) do |stringio_input|
   end
 end
 
-# Streaming (WIP)
-#
-# Current error:
-# /Users/bryce/.gem/ruby/3.3.0/gems/gobject-introspection-4.2.1/lib/gobject-introspection/loader.rb:713:in `invoke':
-# [record-batch-stream-reader][open]: IOError: Invalid IPC stream: negative continuation token (Arrow::Error::Io)
+# Streaming
+
+nrows = 0
+batches = []
+
 Net::HTTP.start(host, port) do |http|
   req = Net::HTTP::Get.new(url)
 
   http.request(req) do |res|
-    res.read_body do |chunk|
-      StringIO.open(chunk) do |stringio_input|
-        Gio::RubyInputStream.open(stringio_input) do |gio_input|
-          Arrow::GIOInputStream.open(gio_input) do |arrow_input|
-            reader = Arrow::RecordBatchStreamReader.new(arrow_input)
+    StringIO.open(res.read_body) do |stringio_input|
+      Gio::RubyInputStream.open(stringio_input) do |gio_input|
+        Arrow::GIOInputStream.open(gio_input) do |arrow_input|
+          reader = Arrow::RecordBatchStreamReader.new(arrow_input)
 
-            p reader.schema
+          p reader.schema
+
+          reader.each do |batch|
+            puts "Got batch of #{batch.length} rows"
+
+            nrows += batch.length
+            batches << batch
           end
         end
       end
     end
   end
 end
+
+puts "Streamed a total of #{batches.length} batches and #{nrows} total rows"
