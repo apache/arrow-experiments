@@ -16,7 +16,6 @@
 # under the License.
 
 require "open-uri"
-require "stringio"
 require "arrow"
 
 host = "localhost"
