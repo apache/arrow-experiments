@@ -30,6 +30,15 @@ main(int argc, char **argv)
   SoupSession *session = soup_session_new();
   SoupMessage *message = soup_message_new(SOUP_METHOD_GET,
                                           "http://localhost:8008");
+  /* Disable keep-alive explicitly. (libsoup uses keep-alive by
+   * default.)
+   *
+   * In general, keep-alive will improve performance when we sends
+   * many GET requests to the same server. But in this case, we send
+   * only one GET request. So we don't need keep-alive here.
+   */
+  SoupMessageHeaders *headers = soup_message_get_request_headers(message);
+  soup_message_headers_append(headers, "connection", "close");
 
   GTimer *timer = g_timer_new();
 
