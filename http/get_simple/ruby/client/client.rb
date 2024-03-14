@@ -16,12 +16,9 @@
 # under the License.
 
 require "net/http"
-
 require "arrow"
 
-host = "localhost"
-port = 8008
-uri = URI("http://#{host}:#{port}")
+uri = URI("http://localhost:8008")
 
 start = Time.now
 arrows_data = Net::HTTP.get(uri)
@@ -34,33 +31,3 @@ elapsed_time = Time.now - start
 n_received_record_batches = table[0].data.n_chunks
 puts("#{n_received_record_batches} record batches received")
 puts("%.2f seconds elapsed" % elapsed_time)
-
-# Streaming
-
-nrows = 0
-batches = []
-
-Net::HTTP.start(host, port) do |http|
-  req = Net::HTTP::Get.new(url)
-
-  http.request(req) do |res|
-    StringIO.open(res.read_body) do |stringio_input|
-      Gio::RubyInputStream.open(stringio_input) do |gio_input|
-        Arrow::GIOInputStream.open(gio_input) do |arrow_input|
-          reader = Arrow::RecordBatchStreamReader.new(arrow_input)
-
-          p reader.schema
-
-          reader.each do |batch|
-            puts "Got batch of #{batch.length} rows"
-
-            nrows += batch.length
-            batches << batch
-          end
-        end
-      end
-    end
-  end
-end
-
-puts "Streamed a total of #{batches.length} batches and #{nrows} total rows"
