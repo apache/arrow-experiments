@@ -24,10 +24,8 @@ This directory contains a minimal example of an HTTP client implemented in Ruby.
 The client:
 
 1. Sends an HTTP GET request to a server.
-2. Receives an HTTP 200 response from the server, converts the response to a RecordBatchReader, and consumes it.
-3. Sends a second HTTP GET request to a server.
-with the response body containing an Arrow IPC stream of record batches.
-4. Streams the response, creating and printing record batches as it goes.
+2. Receives an HTTP 200 response from the server, with the response body containing an Arrow IPC stream of record batches.
+3. Creates an Arrow table from the record batches.
 
 To run this example, first start one of the server examples in the parent directory, then:
 
