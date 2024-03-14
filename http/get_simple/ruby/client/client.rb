@@ -15,20 +15,25 @@
 # specific language governing permissions and limitations
 # under the License.
 
-require "open-uri"
+require "net/http"
+
 require "arrow"
 
 host = "localhost"
 port = 8008
-url = URI("http://#{host}:#{port}")
+uri = URI("http://#{host}:#{port}")
 
-# Non-streaming
-url.open do |input|
-  input = Arrow::BufferInputStream.new(input.read)
-  reader = Arrow::RecordBatchStreamReader.new(input)
-  p reader.schema
-  p reader.read_all
-end
+start = Time.now
+arrows_data = Net::HTTP.get(uri)
+input = Arrow::BufferInputStream.new(arrows_data)
+reader = Arrow::RecordBatchStreamReader.new(input)
+schema = reader.schema
+table = reader.read_all
+elapsed_time = Time.now - start
+
+n_received_record_batches = table[0].data.n_chunks
+puts("#{n_received_record_batches} record batches received")
+puts("%.2f seconds elapsed" % elapsed_time)
 
 # Streaming
 
