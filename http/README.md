@@ -29,4 +29,5 @@ The intent of this work is to:
 
 The end goal of this work is to inform and guide the creation of a set of conventions to be published in the Arrow documentation.
 
-See the [related discussion on the Arrow developer mailing list](https://lists.apache.org/thread/vfz74gv1knnhjdkro47shzd1z5g5ggnf).
+> [!IMPORTANT]
+> Before contributing to this area of the repository, please see the [related discussion on the Arrow developer mailing list](https://lists.apache.org/thread/vfz74gv1knnhjdkro47shzd1z5g5ggnf) and the [Arrow GitHub issue listing the tasks that are a part of this effort](https://github.com/apache/arrow/issues/40465).
