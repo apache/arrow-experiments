@@ -21,11 +21,8 @@ require "arrow"
 uri = URI("http://localhost:8008")
 
 start = Time.now
-arrows_data = Net::HTTP.get(uri)
-input = Arrow::BufferInputStream.new(arrows_data)
-reader = Arrow::RecordBatchStreamReader.new(input)
-schema = reader.schema
-table = reader.read_all
+arrows_data = Net::HTTP.get(uri).freeze
+table = Arrow::Table.load(Arrow::Buffer.new(arrows_data), format: :arrows)
 elapsed_time = Time.now - start
 
 n_received_record_batches = table[0].data.n_chunks
