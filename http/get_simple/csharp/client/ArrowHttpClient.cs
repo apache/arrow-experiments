@@ -28,7 +28,7 @@ namespace ArrowHttpClient
     {
         public static async Task Main(string[] args)
         {
-            string serverUri = "http://127.0.0.1:8008/";
+            string serverUri = "http://localhost:8008/";
 
             DateTime startTime = DateTime.UtcNow;
 

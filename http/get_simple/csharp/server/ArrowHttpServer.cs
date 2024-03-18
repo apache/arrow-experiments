@@ -76,7 +76,7 @@ namespace ArrowHttpServer
 
         public static async Task Main(string[] args)
         {
-            string serverUri = "http://127.0.0.1:8008/";
+            string serverUri = "http://*:8008/";
 
             HttpListener listener = new HttpListener();
             listener.Prefixes.Add(serverUri);
