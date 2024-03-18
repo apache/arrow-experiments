@@ -28,7 +28,7 @@ namespace ArrowHttpClient
     {
         public static async Task Main(string[] args)
         {
-            string serverUri = "http://127.0.0.1:8008/";
+            string serverUri = "http://localhost:8008/";
 
             DateTime startTime = DateTime.UtcNow;
 
@@ -42,7 +42,6 @@ namespace ArrowHttpClient
             {
                 Console.WriteLine("Connected");
 
-                Schema schema = reader.Schema;
                 List<RecordBatch> batches = new List<RecordBatch>();
 
                 int numRows = 0;
@@ -52,6 +51,7 @@ namespace ArrowHttpClient
                     numRows += batch.Length;
                     batches.Add(batch);
                 }
+                Schema schema = reader.Schema;
 
                 DateTime endTime = DateTime.UtcNow;
                 
