@@ -23,22 +23,25 @@ start_time = time.time()
 
 params = {'n_records': 100000}
 url = 'http://localhost:8008'
-response = requests.post(url, data=params)
-buffer = response.content
+response = requests.post(url, data={})
 
-batches = []
+if response.status_code >= 400:
+    print (response.json())
+elif response.status_code == 200:
+    buffer = response.content
+    batches = []
 
-with pa.ipc.open_stream(buffer) as reader:
-    schema = reader.schema
-    try:
-        while True:
-            batches.append(reader.read_next_batch())
-    except StopIteration:
-        pass
+    with pa.ipc.open_stream(buffer) as reader:
+        schema = reader.schema
+        try:
+            while True:
+                batches.append(reader.read_next_batch())
+        except StopIteration:
+            pass
 
-end_time = time.time()
-execution_time = end_time - start_time
+    end_time = time.time()
+    execution_time = end_time - start_time
 
-print(f"{len(buffer)} bytes received")
-print(f"{len(batches)} record batches received")
-print(f"{execution_time} seconds elapsed")
+    print(f"{len(buffer)} bytes received")
+    print(f"{len(batches)} record batches received")
+    print(f"{execution_time} seconds elapsed")
