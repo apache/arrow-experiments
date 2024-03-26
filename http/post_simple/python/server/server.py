@@ -18,9 +18,12 @@
 import pyarrow as pa
 import urllib.parse
 from random import randbytes
-from http.server import BaseHTTPRequestHandler, HTTPServer
 import io
 
+from fastapi import Request, FastAPI
+from fastapi.responses import StreamingResponse, JSONResponse
+
+app = FastAPI()
 
 def get_post_data_and_schema(total_records: int):
     schema = pa.schema([('a', pa.int64()), ('b', pa.int64()),
@@ -70,64 +73,17 @@ def generate_batches(schema, reader):
         writer.close()
         yield sink.getvalue()
 
+@app.post("/")
+async def main(request: Request):
+    request_body = await request.body()
+    params = urllib.parse.parse_qs(request_body.decode('ascii'))
+    if 'n_records' not in params.keys():
+        return JSONResponse(status_code=400, content='request failed. n_records value not found in request data.')
 
-class PostRequestServer(BaseHTTPRequestHandler):
+    n_records = int(params['n_records'][0])
 
-    def do_POST(self):
-        data = self.rfile.read(int(
-            self.headers['Content-Length'])).decode('ascii')
-        params = urllib.parse.parse_qs(data)
-
-        self.close_connection = True
-
-        if 'n_records' not in params.keys():
-            # send invalid response
-            self.send_response(400)
-            self.send_header('Content-type', 'text/html')
-            self.end_headers()
-            message = "Invalid request. Please provide 'n_records' parameter"
-            self.wfile.write(bytes(message, "utf8"))
-
-        # the parse data returned by urllib.parse.parse_qs is a dictionary
-        # where each key is query variable name and the values are list of
-        # values for each name. Here, params['n_records'][0] wil be the
-        # first value in the list of parsed values of query data.
-        n_records = int(params['n_records'][0])
-
-        self.send_response(200)
-        self.send_header('Content-type', 'application/vnd.apache.arrow.stream')
-
-        if self.request_version == 'HTTP/1.0':
-            self.protocol_version = 'HTTP/1.0'
-            chunked = False
-        else:
-            # If HTTP/1.1, use chunked encoding
-            chunked = True
-            self.send_header('Transfer-Encoding', 'chunked')
-
-        self.end_headers()
-
-        batches, schema = get_post_data_and_schema(n_records)
-
+    batches, schema = get_post_data_and_schema(n_records)
+    def iterbuffer():
         for buffer in generate_batches(schema, make_reader(schema, batches)):
-            if chunked:
-                self.wfile.write('{:X}\r\n'.format(
-                    len(buffer)).encode('utf-8'))
-            self.wfile.write(buffer)
-            if chunked:
-                self.wfile.write('\r\n'.encode('utf-8'))
-            self.wfile.flush()
-
-        if chunked:
-            self.wfile.write('0\r\n\r\n'.encode('utf-8'))
-            self.wfile.flush()
-
-
-server_address = ('localhost', 8008)
-try:
-    httpd = HTTPServer(server_address, PostRequestServer)
-    print(f'Serving on {server_address[0]}:{server_address[1]}...')
-    httpd.serve_forever()
-except KeyboardInterrupt:
-    print('Shutting down server')
-    httpd.socket.close()
+            yield buffer
+    return StreamingResponse(iterbuffer())

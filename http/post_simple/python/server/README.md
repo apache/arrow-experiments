@@ -27,8 +27,11 @@ This directory contains a minimal example of an HTTP server implemented in Pytho
 To run this example:
 
 ```sh
+pip install fastapi
+pip install "uvicorn[standard]"
 pip install pyarrow
-python server.py
+# start the server using uvicorn
+uvicorn server:app --port 8008
 ```
 
 > [!NOTE]  
