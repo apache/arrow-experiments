@@ -400,7 +400,7 @@ arrow::Status run_server(const std::string& addr, const int port) {
 
   std::shared_ptr<arrow::Schema> sc;
   {
-    auto source = cudf::io::source_info("./sample_data/train.parquet");
+    auto source = cudf::io::source_info("./data/taxi-data/train.parquet");
     auto options = cudf::io::parquet_reader_options::builder(source).num_rows(1);
     auto result = cudf::io::read_parquet(options);
 
