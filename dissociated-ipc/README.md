@@ -20,7 +20,7 @@
 # Arrow Dissociated IPC Protocol Example
 
 This directory contains a reference example implementation of the 
-[Arrow Dissociated IPC Protocol](). 
+[Arrow Dissociated IPC Protocol](https://arrow.apache.org/docs/format/DissociatedIPC.html).
 
 This protocol splits the Arrow Flatbuffers IPC metadata and the body buffers
 into separate streams to allow for utilizing shared memory, non-cpu device
@@ -33,11 +33,11 @@ located on an NVIDIA GPU.
 ## Building
 
 You must have libcudf, libarrow, libarrow_flight, libarrow_cuda, and ucx
-accessible on your CMAKE_MODULE_PATH so that cmake can find them.
+accessible on your `CMAKE_MODULE_PATH`/`CMAKE_PREFIX_PATH` so that `cmake` can find them.
 
 After that you can simply do the following:
 
-```bash
+```console
 $ mkdir build && cd build
 $ cmake ..
 $ make
