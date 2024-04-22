@@ -47,6 +47,10 @@ static constexpr ucp_tag_t kWantCtrlTag = 0xFFFFFDEADBA0BAB0;
 // define a mask to check the tag
 static constexpr ucp_tag_t kWantCtrlMask = 0xFFFFF00000000000;
 
+// constant for the bit shift to make the data body type the most
+// significant byte
+static constexpr int kShiftBodyType = 55;
+
 enum class MetadataMsgType : uint8_t {
   EOS = 0,
   METADATA = 1,
@@ -325,7 +329,8 @@ class CudaUcxServer : public UcxServer {
     auto pending_iov = pending.release();
     // indicate that we're sending the full data body, not a pointer list and add
     // the sequence number to the tag
-    ucp_tag_t tag = (uint64_t(0) << 55) | arrow::bit_util::ToLittleEndian(sequence_num);
+    ucp_tag_t tag =
+        (uint64_t(0) << kShiftBodyType) | arrow::bit_util::ToLittleEndian(sequence_num);
     return cnxn->SendTagIov(
         tag, pending_iov->iovs.data(), pending_iov->iovs.size(), pending_iov,
         [](void* request, ucs_status_t status, void* user_data) {
@@ -435,7 +440,7 @@ arrow::Result<ucp_tag_t> get_want_data_tag(const arrow::util::Uri& loc) {
   return 0;
 }
 
-// utility client class to read a stream of data using the dissociated ipc 
+// utility client class to read a stream of data using the dissociated ipc
 // protocol structure
 class StreamReader {
  public:
@@ -462,7 +467,7 @@ class StreamReader {
 
     return arrow::Status::OK();
   }
-  
+
   arrow::Result<std::shared_ptr<arrow::Schema>> Schema() {
     // return the schema if we've already pulled it
     if (schema_) {
@@ -741,10 +746,8 @@ arrow::Status run_client(const std::string& addr, const int port) {
   ARROW_LOG(DEBUG) << device->ToString();
 
   UcxClient ctrl_client, data_client;
-  ARROW_RETURN_NOT_OK(
-      ctrl_client.Init(ctrl_uri.host(), ctrl_uri.port()));
-  ARROW_RETURN_NOT_OK(
-      data_client.Init(data_uri.host(), data_uri.port()));
+  ARROW_RETURN_NOT_OK(ctrl_client.Init(ctrl_uri.host(), ctrl_uri.port()));
+  ARROW_RETURN_NOT_OK(data_client.Init(data_uri.host(), data_uri.port()));
 
   ARROW_ASSIGN_OR_RAISE(auto ctrl_cnxn, ctrl_client.CreateConn());
   ARROW_ASSIGN_OR_RAISE(auto data_cnxn, data_client.CreateConn());
@@ -783,14 +786,6 @@ int main(int argc, char** argv) {
                                        arrow::util::ArrowLogLevel::ARROW_DEBUG);
 
   gflags::ParseCommandLineFlags(&argc, &argv, true);
-  // std::thread t1(run_server, FLAGS_address, FLAGS_port);
-
-  // using namespace std::chrono_literals;
-  // std::this_thread::sleep_for(10000ms);
-  // std::thread t2(run_client, FLAGS_address, FLAGS_port);
-
-  // t2.join();
-  // t1.join();
   if (FLAGS_client) {
     ARROW_CHECK_OK(run_client(FLAGS_address, FLAGS_port));
   } else {

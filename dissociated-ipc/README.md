@@ -19,14 +19,14 @@
 
 # Arrow Dissociated IPC Protocol Example
 
-This directory contains a reference example implementation of the 
+This directory contains a reference example implementation of the
 [Arrow Dissociated IPC Protocol](https://arrow.apache.org/docs/format/DissociatedIPC.html).
 
 This protocol splits the Arrow Flatbuffers IPC metadata and the body buffers
 into separate streams to allow for utilizing shared memory, non-cpu device
-memory, or remote memory (RDMA) with Arrow formatted datasets. 
+memory, or remote memory (RDMA) with Arrow formatted datasets.
 
-This example utilizes [libcudf](https://docs.rapids.ai/api) and 
+This example utilizes [libcudf](https://docs.rapids.ai/api) and
 [UCX](https://openucx.readthedocs.io/en/master/#) to transfer Arrow data
 located on an NVIDIA GPU.
 
@@ -49,7 +49,7 @@ to build the `arrow-cudf-flight` mainprog.
 
 You can start the server by just running `arrow-cudf-flight` which will
 default to using `31337` as the Flight port and `127.0.0.1` for the host.
-Both of these can be changed via the `-port` and `-address` gflags 
+Both of these can be changed via the `-port` and `-address` gflags
 respectively.
 
 You can run the client by adding the `-client` option when running the

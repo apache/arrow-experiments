@@ -17,14 +17,17 @@
 
 #include "ucx_conn.h"
 
-#include "arrow/device.h"
+#include <limits>
+#include <string>
+
+#include <arrow/device.h>
 
 namespace utils {
 
 ucs_status_t wait_for_request(ucs_status_ptr_t request, UcpWorker& worker) {
   ucs_status_t status = UCS_OK;
   if (UCS_PTR_IS_ERR(request)) {
-    status = UCS_PTR_STATUS(request);    
+    status = UCS_PTR_STATUS(request);
   } else if (UCS_PTR_IS_PTR(request)) {
     while ((status = ucp_request_check_status(request)) == UCS_INPROGRESS) {
       ucp_worker_progress(worker.get());
@@ -237,8 +240,7 @@ arrow::Status Connection::RecvTagData(ucp_tag_message_h msg, void* buffer,
   ARROW_RETURN_NOT_OK(CheckClosed());
 
   ucp_request_param_t recv_param;
-  recv_param.op_attr_mask = UCP_OP_ATTR_FLAG_NO_IMM_CMPL |
-                            UCP_OP_ATTR_FIELD_DATATYPE |
+  recv_param.op_attr_mask = UCP_OP_ATTR_FLAG_NO_IMM_CMPL | UCP_OP_ATTR_FIELD_DATATYPE |
                             UCP_OP_ATTR_FIELD_MEMORY_TYPE;
   recv_param.datatype = ucp_dt_make_contig(1);
   recv_param.memory_type = memory_type;
@@ -314,8 +316,7 @@ arrow::Status Connection::SendTagIov(ucp_tag_t tag, const ucp_dt_iov_t* iov,
   ARROW_RETURN_NOT_OK(CheckClosed());
 
   ucp_request_param_t request_param;
-  request_param.op_attr_mask = UCP_OP_ATTR_FIELD_DATATYPE |
-                               UCP_OP_ATTR_FIELD_MEMORY_TYPE;  
+  request_param.op_attr_mask = UCP_OP_ATTR_FIELD_DATATYPE | UCP_OP_ATTR_FIELD_MEMORY_TYPE;
   request_param.datatype = UCP_DATATYPE_IOV;
   if (cb) {
     request_param.cb.send = cb;

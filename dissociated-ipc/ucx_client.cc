@@ -18,6 +18,9 @@
 #include "ucx_client.h"
 #include "ucx_utils.h"
 
+#include <memory>
+#include <string>
+
 arrow::Status UcxClient::Init(const std::string& host, const int32_t port) {
   ucp_config_t* ucp_config;
   ucp_params_t ucp_params;

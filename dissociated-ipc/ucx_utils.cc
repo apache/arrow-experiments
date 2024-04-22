@@ -16,8 +16,8 @@
 // under the License.
 
 #include <arpa/inet.h>
-#include <ucp/api/ucp.h>
 #include <netdb.h>
+#include <ucp/api/ucp.h>
 
 #include "arrow/status.h"
 #include "arrow/util/io_util.h"

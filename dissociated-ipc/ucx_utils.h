@@ -17,6 +17,10 @@
 
 #pragma once
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include <ucp/api/ucp.h>
 
 #include <arrow/buffer.h>

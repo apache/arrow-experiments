@@ -17,9 +17,13 @@
 
 #pragma once
 
-#include <arrow/status.h>
-#include "ucx_utils.h"
 #include "ucx_conn.h"
+#include "ucx_utils.h"
+
+#include <memory>
+#include <string>
+
+#include <arrow/status.h>
 
 class UcxClient {
  public:
@@ -27,7 +31,7 @@ class UcxClient {
   ~UcxClient() = default;
 
   arrow::Status Init(const std::string& host, const int32_t port);
-  arrow::Result<std::unique_ptr<utils::Connection>> CreateConn();  
+  arrow::Result<std::unique_ptr<utils::Connection>> CreateConn();
 
  private:
   std::shared_ptr<utils::UcpContext> ucp_context_;

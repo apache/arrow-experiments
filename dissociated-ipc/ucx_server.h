@@ -20,7 +20,9 @@
 #include <atomic>
 #include <memory>
 #include <queue>
+#include <string>
 #include <thread>
+#include <utility>
 
 #include "ucx_conn.h"
 #include "ucx_utils.h"
@@ -34,7 +36,7 @@ class UcxServer {
   virtual ~UcxServer() = default;
   arrow::Status Init(const std::string& host, const int32_t port);
 
-  arrow::Status Wait();  
+  arrow::Status Wait();
   virtual arrow::Status Shutdown();
 
   inline void set_cuda_context(std::shared_ptr<arrow::cuda::CudaContext> ctx) {

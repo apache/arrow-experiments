@@ -20,6 +20,7 @@
 #include <ucp/api/ucp.h>
 #include <future>
 #include <memory>
+#include <utility>
 
 #include "arrow/util/logging.h"
 #include "ucx_utils.h"
@@ -27,7 +28,7 @@
 namespace utils {
 class Connection {
  public:
-  Connection(std::shared_ptr<UcpWorker> worker);
+  explicit Connection(std::shared_ptr<UcpWorker> worker);
   Connection(std::shared_ptr<UcpWorker> worker, ucp_ep_h endpoint);
 
   ARROW_DISALLOW_COPY_AND_ASSIGN(Connection);
@@ -84,6 +85,6 @@ class Connection {
   std::shared_ptr<utils::UcpWorker> ucp_worker_;
   ucp_ep_h remote_endpoint_;
 
-  bool closed_ { false };
+  bool closed_{false};
 };
 }  // namespace utils
