@@ -20,7 +20,7 @@
 # Arrow Dissociated IPC Protocol Example
 
 This directory contains a reference example implementation of the
-[Arrow Dissociated IPC Protocol](https://arrow.apache.org/docs/format/DissociatedIPC.html).
+[Arrow Dissociated IPC Protocol](https://arrow.apache.org/docs/dev/format/DissociatedIPC.html).
 
 This protocol splits the Arrow Flatbuffers IPC metadata and the body buffers
 into separate streams to allow for utilizing shared memory, non-cpu device
