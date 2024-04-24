@@ -18,7 +18,7 @@
 using Arrow, HTTP, Tables
 
 function get_stream(::HTTP.Request)
-    total_records = 10_000_000
+    total_records = 100_000_000
     batch_len = 4096
     stream = Tables.partitioner(Iterators.partition(1:total_records, batch_len)) do indices
         nrows = length(indices)
