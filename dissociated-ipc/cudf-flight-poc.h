@@ -15,25 +15,24 @@
 // specific language governing permissions and limitations
 // under the License.
 
-#include <arrow/status.h>
-#include <arrow/util/logging.h>
-#include <arrow/util/uri.h>
-#include <gflags/gflags.h>
+#pragma once
 
-#include "cudf-flight-poc.h"
+#include <ucp/api/ucp.h>
 
-DEFINE_int32(port, 31337, "port to listen or connect");
-DEFINE_string(address, "127.0.0.1", "address to connect to");
-DEFINE_bool(client, false, "run the client");
+// Define some constants for the `want_data` tags
+static constexpr ucp_tag_t kWantDataTag = 0x00000DEADBA0BAB0;
+static constexpr ucp_tag_t kWantCtrlTag = 0xFFFFFDEADBA0BAB0;
+// define a mask to check the tag
+static constexpr ucp_tag_t kWantCtrlMask = 0xFFFFF00000000000;
 
-int main(int argc, char** argv) {
-  arrow::util::ArrowLog::StartArrowLog("cudf-flight-poc",
-                                       arrow::util::ArrowLogLevel::ARROW_DEBUG);
+// constant for the bit shift to make the data body type the most
+// significant byte
+static constexpr int kShiftBodyType = 55;
 
-  gflags::ParseCommandLineFlags(&argc, &argv, true);
-  if (FLAGS_client) {
-    ARROW_CHECK_OK(run_client(FLAGS_address, FLAGS_port));
-  } else {
-    ARROW_CHECK_OK(run_server(FLAGS_address, FLAGS_port));
-  }
-}
+enum class MetadataMsgType : uint8_t {
+  EOS = 0,
+  METADATA = 1,
+};
+
+arrow::Status run_server(const std::string& addr, const int port);
+arrow::Status run_client(const std::string& addr, const int port);

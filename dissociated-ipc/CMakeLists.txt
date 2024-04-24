@@ -84,8 +84,15 @@ add_library(ucx::ucx INTERFACE IMPORTED)
 target_link_libraries(ucx::ucx INTERFACE ucx::ucp ucx::uct ucx::ucs)
 
 add_definitions(-DFMT_USE_NONTYPE_TEMPLATE_ARGS=0)
-add_executable(arrow-cudf-flight cudf-flight-poc.cc ucx_utils.cc ucx_server.cc
-                                 ucx_client.cc ucx_conn.cc)
+add_executable(
+  arrow-cudf-flight
+  cudf-flight-poc.cc
+  cudf-flight-client.cc
+  cudf-flight-server.cc
+  ucx_utils.cc
+  ucx_server.cc
+  ucx_client.cc
+  ucx_conn.cc)
 target_link_libraries(
   arrow-cudf-flight
   arrow_shared
