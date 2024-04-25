@@ -30,7 +30,7 @@
 #include <arrow/util/logging.h>
 #include <arrow/util/uri.h>
 
-#include "cudf-flight-poc.h"
+#include "cudf-flight-ucx.h"
 #include "ucx_client.h"
 
 namespace flight = arrow::flight;

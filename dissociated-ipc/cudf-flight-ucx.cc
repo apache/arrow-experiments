@@ -20,7 +20,7 @@
 #include <arrow/util/uri.h>
 #include <gflags/gflags.h>
 
-#include "cudf-flight-poc.h"
+#include "cudf-flight-ucx.h"
 
 DEFINE_int32(port, 31337, "port to listen or connect");
 DEFINE_string(address, "127.0.0.1", "address to connect to");
