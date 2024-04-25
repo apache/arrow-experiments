@@ -38,9 +38,8 @@ accessible on your `CMAKE_MODULE_PATH`/`CMAKE_PREFIX_PATH` so that `cmake` can f
 After that you can simply do the following:
 
 ```console
-$ mkdir build && cd build
-$ cmake ..
-$ make
+$ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+$ cmake --build build
 ```
 
 to build the `arrow-cudf-flight` mainprog.
