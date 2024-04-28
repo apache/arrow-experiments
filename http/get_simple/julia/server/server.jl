@@ -34,7 +34,5 @@ function get_stream(::HTTP.Request)
     return HTTP.Response(200, take!(buffer))
 end
 
-const ARROW_ROUTER = HTTP.Router()
-HTTP.register!(ARROW_ROUTER, "GET", "/", get_stream)
 println("Serving on localhost:8008...")
-server = HTTP.serve!(ARROW_ROUTER, "127.0.0.1", 8008)
+server = HTTP.serve(get_stream, "127.0.0.1", 8008)
