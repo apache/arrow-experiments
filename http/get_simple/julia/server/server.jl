@@ -15,7 +15,13 @@
 # specific language governing permissions and limitations
 # under the License.
 
-using Arrow, HTTP, Tables
+using Arrow, HTTP, Random, Tables
+
+function randint_nullable(n::Integer)
+    v = Vector{Union{Missing, Int}}(undef, n)
+    rand!(v, Int)
+    return v
+end
 
 function get_stream(::HTTP.Request)
     total_records = 100_000_000
@@ -23,10 +29,10 @@ function get_stream(::HTTP.Request)
     stream = Tables.partitioner(Iterators.partition(1:total_records, batch_len)) do indices
         nrows = length(indices)
         return (
-            a = rand(Int, nrows),
-            b = rand(Int, nrows),
-            c = rand(Int, nrows),
-            d = rand(Int, nrows)
+            a = randint_nullable(nrows),
+            b = randint_nullable(nrows),
+            c = randint_nullable(nrows),
+            d = randint_nullable(nrows)
         )
     end
     buffer = IOBuffer()
