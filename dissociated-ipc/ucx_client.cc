@@ -57,7 +57,7 @@ arrow::Result<std::unique_ptr<utils::Connection>> UcxClient::CreateConn() {
   std::memset(&worker_params, 0, sizeof(worker_params));
   worker_params.field_mask =
       UCP_WORKER_PARAM_FIELD_THREAD_MODE | UCP_WORKER_PARAM_FIELD_FLAGS;
-  worker_params.thread_mode = UCS_THREAD_MODE_SERIALIZED;
+  worker_params.thread_mode = UCS_THREAD_MODE_MULTI;
   worker_params.flags = UCP_WORKER_FLAG_IGNORE_REQUEST_LEAK;
 
   ucp_worker_h ucp_worker;
