@@ -60,13 +60,13 @@ def generate_buffers(schema, source):
     with io.BytesIO() as sink, pa.ipc.new_stream(sink, schema) as writer:
         for batch in source:
             sink.seek(0)
-            sink.truncate(0)
             writer.write_batch(batch)
+            sink.truncate()
             yield sink.getvalue()
         
         sink.seek(0)
-        sink.truncate(0)
         writer.close()
+        sink.truncate()
         yield sink.getvalue()
  
 class MyServer(BaseHTTPRequestHandler):
