@@ -19,9 +19,14 @@ import urllib.request
 import pyarrow as pa
 import time
 
+ARROW_STREAM_FORMAT = 'application/vnd.apache.arrow.stream'
+
 start_time = time.time()
 
 response = urllib.request.urlopen('http://localhost:8008')
+content_type = response.headers['Content-Type']
+if content_type != ARROW_STREAM_FORMAT:
+  raise ValueError(f"Expected {ARROW_STREAM_FORMAT}, got {content_type}")
 
 batches = []
 
