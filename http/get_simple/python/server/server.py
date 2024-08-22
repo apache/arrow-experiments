@@ -56,12 +56,9 @@ def GetPutData():
     
     return batches
 
-def make_reader(schema, batches):
-    return pa.RecordBatchReader.from_batches(schema, batches)
-
-def generate_batches(schema, reader):
+def generate_buffers(schema, source):
     with io.BytesIO() as sink, pa.ipc.new_stream(sink, schema) as writer:
-        for batch in reader:
+        for batch in source:
             sink.seek(0)
             sink.truncate(0)
             writer.write_batch(batch)
@@ -73,7 +70,13 @@ def generate_batches(schema, reader):
         yield sink.getvalue()
  
 class MyServer(BaseHTTPRequestHandler):
+    def resolve_batches(self):
+        return pa.RecordBatchReader.from_batches(schema, batches)
+
     def do_GET(self):
+        ### given a source of record batches, this function sends them
+        ### to a client using HTTP chunked transfer encoding.
+        source = self.resolve_batches()
 
         if self.request_version == 'HTTP/1.0':
             self.protocol_version = 'HTTP/1.0'
@@ -99,7 +102,7 @@ class MyServer(BaseHTTPRequestHandler):
         
         self.end_headers()
         
-        for buffer in generate_batches(schema, make_reader(schema, batches)):
+        for buffer in generate_buffers(schema, source):
             if chunked:
                 self.wfile.write('{:X}\r\n'.format(len(buffer)).encode('utf-8'))
             self.wfile.write(buffer)
