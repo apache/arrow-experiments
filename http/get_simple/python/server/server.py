@@ -62,29 +62,33 @@ def generate_buffers(schema, source):
             sink.seek(0)
             writer.write_batch(batch)
             sink.truncate()
-            yield sink.getvalue()
+            with sink.getbuffer() as buffer:
+                yield buffer
         
         sink.seek(0)
         writer.close()
         sink.truncate()
-        yield sink.getvalue()
+        with sink.getbuffer() as buffer:
+            yield buffer
 
-# def chunk_huge_buffer(buffer, max_chunk_size):
-#     view = memoryview(buffer)
+# def chunk_huge_buffer(view, max_chunk_size):
 #     if len(view) <= max_chunk_size:
 #         yield view
 #         return
 #     num_splits = len(view) // max_chunk_size
 #     for i in range(num_splits):
-#         yield view[i * max_chunk_size:i * max_chunk_size + max_chunk_size]
+#         with view[i * max_chunk_size:i * max_chunk_size + max_chunk_size] as chunk:
+#             yield chunk
 #     last_chunk_size = len(view) - (num_splits * max_chunk_size)
 #     if last_chunk_size > 0:
-#         yield view[num_splits * max_chunk_size:]
+#         with view[num_splits * max_chunk_size:] as chunk:
+#             yield chunk
 
 # def generate_chunked_buffers(schema, source, max_chunk_size):
 #     for buffer in generate_buffers(schema, source):
-#         for chunk in chunk_huge_buffer(buffer, max_chunk_size):
-#             yield chunk
+#         with memoryview(buffer) as view:
+#             for chunk in chunk_huge_buffer(view, max_chunk_size):
+#                 yield chunk
  
 class MyServer(BaseHTTPRequestHandler):
     def resolve_batches(self):
