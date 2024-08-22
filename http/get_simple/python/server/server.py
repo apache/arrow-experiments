@@ -68,6 +68,23 @@ def generate_buffers(schema, source):
         writer.close()
         sink.truncate()
         yield sink.getvalue()
+
+# def chunk_huge_buffer(buffer, max_chunk_size):
+#     view = memoryview(buffer)
+#     if len(view) <= max_chunk_size:
+#         yield view
+#         return
+#     num_splits = len(view) // max_chunk_size
+#     for i in range(num_splits):
+#         yield view[i * max_chunk_size:i * max_chunk_size + max_chunk_size]
+#     last_chunk_size = len(view) - (num_splits * max_chunk_size)
+#     if last_chunk_size > 0:
+#         yield view[num_splits * max_chunk_size:]
+
+# def generate_chunked_buffers(schema, source, max_chunk_size):
+#     for buffer in generate_buffers(schema, source):
+#         for chunk in chunk_huge_buffer(buffer, max_chunk_size):
+#             yield chunk
  
 class MyServer(BaseHTTPRequestHandler):
     def resolve_batches(self):
@@ -102,6 +119,12 @@ class MyServer(BaseHTTPRequestHandler):
         
         self.end_headers()
         
+        ### if any record batch could be larger than 2 GB, Python's
+        ### http.server will error when calling self.wfile.write(),
+        ### so you will need to split them into smaller chunks by
+        ### using the generate_chunked_buffers() function instead
+        ### if generate_buffers().
+        # for buffer in generate_chunked_buffers(schema, source, int(2e9)):
         for buffer in generate_buffers(schema, source):
             if chunked:
                 self.wfile.write('{:X}\r\n'.format(len(buffer)).encode('utf-8'))
@@ -109,27 +132,6 @@ class MyServer(BaseHTTPRequestHandler):
             if chunked:
                 self.wfile.write('\r\n'.encode('utf-8'))
             self.wfile.flush()
-            
-            ### if any record batch could be larger than 2 GB, Python's
-            ### http.server will error when calling self.wfile.write(),
-            ### so you will need to split them into smaller chunks by 
-            ### replacing the six lines above with this:
-            #chunk_size = int(2e9)
-            #chunk_splits = len(buffer) // chunk_size
-            #for i in range(chunk_splits):
-            #    if chunked:
-            #        self.wfile.write('{:X}\r\n'.format(chunk_size).encode('utf-8'))
-            #    self.wfile.write(buffer[i * chunk_size:i * chunk_size + chunk_size])
-            #    if chunked:
-            #        self.wfile.write('\r\n'.encode('utf-8'))
-            #    self.wfile.flush()
-            #last_chunk_size = len(buffer) - (chunk_splits * chunk_size)
-            #if chunked:
-            #    self.wfile.write('{:X}\r\n'.format(last_chunk_size).encode('utf-8'))
-            #self.wfile.write(buffer[chunk_splits * chunk_size:])
-            #if chunked:
-            #    self.wfile.write('\r\n'.encode('utf-8'))
-            #self.wfile.flush()
         
         if chunked:
             self.wfile.write('0\r\n\r\n'.encode('utf-8'))
