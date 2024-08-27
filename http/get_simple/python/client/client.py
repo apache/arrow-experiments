@@ -26,22 +26,22 @@ start_time = time.time()
 response = urllib.request.urlopen('http://localhost:8008')
 content_type = response.headers['Content-Type']
 if content_type != ARROW_STREAM_FORMAT:
-  raise ValueError(f"Expected {ARROW_STREAM_FORMAT}, got {content_type}")
+    raise ValueError(f"Expected {ARROW_STREAM_FORMAT}, got {content_type}")
 
 batches = []
 
 with pa.ipc.open_stream(response) as reader:
-  schema = reader.schema
-  try:
-    while True:
-      batches.append(reader.read_next_batch())
-  except StopIteration:
-      pass
+    schema = reader.schema
+    try:
+        while True:
+            batches.append(reader.read_next_batch())
+    except StopIteration:
+        pass
 
 # or:
-#with pa.ipc.open_stream(response) as reader:
-#  schema = reader.schema
-#  batches = [b for b in reader]
+# with pa.ipc.open_stream(response) as reader:
+#     schema = reader.schema
+#     batches = [b for b in reader]
 
 end_time = time.time()
 execution_time = end_time - start_time
