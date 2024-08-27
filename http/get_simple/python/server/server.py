@@ -56,24 +56,48 @@ def GetPutData():
     
     return batches
 
-def make_reader(schema, batches):
-    return pa.RecordBatchReader.from_batches(schema, batches)
-
-def generate_batches(schema, reader):
+def generate_buffers(schema, source):
     with io.BytesIO() as sink, pa.ipc.new_stream(sink, schema) as writer:
-        for batch in reader:
+        for batch in source:
             sink.seek(0)
-            sink.truncate(0)
             writer.write_batch(batch)
-            yield sink.getvalue()
+            sink.truncate()
+            with sink.getbuffer() as buffer:
+                yield buffer
         
         sink.seek(0)
-        sink.truncate(0)
         writer.close()
-        yield sink.getvalue()
+        sink.truncate()
+        with sink.getbuffer() as buffer:
+            yield buffer
+
+# def chunk_huge_buffer(view, max_chunk_size):
+#     if len(view) <= max_chunk_size:
+#         yield view
+#         return
+#     num_splits = len(view) // max_chunk_size
+#     for i in range(num_splits):
+#         with view[i * max_chunk_size:i * max_chunk_size + max_chunk_size] as chunk:
+#             yield chunk
+#     last_chunk_size = len(view) - (num_splits * max_chunk_size)
+#     if last_chunk_size > 0:
+#         with view[num_splits * max_chunk_size:] as chunk:
+#             yield chunk
+
+# def generate_chunked_buffers(schema, source, max_chunk_size):
+#     for buffer in generate_buffers(schema, source):
+#         with memoryview(buffer) as view:
+#             for chunk in chunk_huge_buffer(view, max_chunk_size):
+#                 yield chunk
  
 class MyServer(BaseHTTPRequestHandler):
+    def resolve_batches(self):
+        return pa.RecordBatchReader.from_batches(schema, batches)
+
     def do_GET(self):
+        ### given a source of record batches, this function sends them
+        ### to a client using HTTP chunked transfer encoding.
+        source = self.resolve_batches()
 
         if self.request_version == 'HTTP/1.0':
             self.protocol_version = 'HTTP/1.0'
@@ -99,34 +123,19 @@ class MyServer(BaseHTTPRequestHandler):
         
         self.end_headers()
         
-        for buffer in generate_batches(schema, make_reader(schema, batches)):
+        ### if any record batch could be larger than 2 GB, Python's
+        ### http.server will error when calling self.wfile.write(),
+        ### so you will need to split them into smaller chunks by
+        ### using the generate_chunked_buffers() function instead
+        ### if generate_buffers().
+        # for buffer in generate_chunked_buffers(schema, source, int(2e9)):
+        for buffer in generate_buffers(schema, source):
             if chunked:
                 self.wfile.write('{:X}\r\n'.format(len(buffer)).encode('utf-8'))
             self.wfile.write(buffer)
             if chunked:
                 self.wfile.write('\r\n'.encode('utf-8'))
             self.wfile.flush()
-            
-            ### if any record batch could be larger than 2 GB, Python's
-            ### http.server will error when calling self.wfile.write(),
-            ### so you will need to split them into smaller chunks by 
-            ### replacing the six lines above with this:
-            #chunk_size = int(2e9)
-            #chunk_splits = len(buffer) // chunk_size
-            #for i in range(chunk_splits):
-            #    if chunked:
-            #        self.wfile.write('{:X}\r\n'.format(chunk_size).encode('utf-8'))
-            #    self.wfile.write(buffer[i * chunk_size:i * chunk_size + chunk_size])
-            #    if chunked:
-            #        self.wfile.write('\r\n'.encode('utf-8'))
-            #    self.wfile.flush()
-            #last_chunk_size = len(buffer) - (chunk_splits * chunk_size)
-            #if chunked:
-            #    self.wfile.write('{:X}\r\n'.format(last_chunk_size).encode('utf-8'))
-            #self.wfile.write(buffer[chunk_splits * chunk_size:])
-            #if chunked:
-            #    self.wfile.write('\r\n'.encode('utf-8'))
-            #self.wfile.flush()
         
         if chunked:
             self.wfile.write('0\r\n\r\n'.encode('utf-8'))

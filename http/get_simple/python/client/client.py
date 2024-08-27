@@ -19,14 +19,18 @@ import urllib.request
 import pyarrow as pa
 import time
 
+ARROW_STREAM_FORMAT = 'application/vnd.apache.arrow.stream'
+
 start_time = time.time()
 
-with urllib.request.urlopen('http://localhost:8008') as response:
-  buffer = response.read()
+response = urllib.request.urlopen('http://localhost:8008')
+content_type = response.headers['Content-Type']
+if content_type != ARROW_STREAM_FORMAT:
+  raise ValueError(f"Expected {ARROW_STREAM_FORMAT}, got {content_type}")
 
 batches = []
 
-with pa.ipc.open_stream(buffer) as reader:
+with pa.ipc.open_stream(response) as reader:
   schema = reader.schema
   try:
     while True:
@@ -35,13 +39,12 @@ with pa.ipc.open_stream(buffer) as reader:
       pass
 
 # or:
-#with pa.ipc.open_stream(buffer) as reader:
+#with pa.ipc.open_stream(response) as reader:
 #  schema = reader.schema
 #  batches = [b for b in reader]
 
 end_time = time.time()
 execution_time = end_time - start_time
 
-print(f"{len(buffer)} bytes received")
 print(f"{len(batches)} record batches received")
 print(f"{execution_time} seconds elapsed")
