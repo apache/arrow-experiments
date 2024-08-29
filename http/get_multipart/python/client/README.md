@@ -38,7 +38,7 @@ pip install pyarrow
 python simple_client.py
 ```
 
-> [!NOTE]
+> [!WARNING]
 > This `simple_client.py` parses the multipart response using the multipart
 > message parser from the Python `email` module. This module puts the entire
 > message in memory and seems to spend a lot of time looking for part delimiter
