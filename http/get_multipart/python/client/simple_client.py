@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+from email import policy
 import email
 import json
 import pyarrow as pa
@@ -44,7 +45,7 @@ def parse_multipart_message(response, boundary, buffer_size=8192):
     buffer = bytearray(buffer_size)
 
     header = f'MIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary="{boundary}"\r\n\r\n'
-    feedparser = email.parser.BytesFeedParser()
+    feedparser = email.parser.BytesFeedParser(policy=policy.default)
     feedparser.feed(header.encode("utf-8"))
     while bytes_read := response.readinto(buffer):
         start_time = time.time()
