@@ -25,7 +25,7 @@ This directory contains examples of HTTP servers/clients that send/receive a mul
 
 The `multipart/mixed` response format uses a boundary string to separate the
 parts. This string **must not appear in the content of any part** according
-to RFC 1341. [^1]
+to RFC 1341.[^1]
 
 We **do not recommend** checking for the boundary string in the content of the
 parts as that would prevent streaming them. Which would add up to the memory
