@@ -14,19 +14,6 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-"""
-Simple HTTP client parsing a multipart/mixed response.
-
-This client parses the multipart response produced by server/server.py
-by using the multipart message parser from the Python email module.
-
-This module puts the entire message in memory and seems to spend a lot
-of time looking for part delimiter and encoding/decoding the parts.
-
-The overhead of multipart/mixed parsing is 85% on my machine and after
-the ~1GB Arrow Stream message is fully in memory, it takes only 0.06%
-of the total execution time to parse it.
-"""
 
 import email
 import json

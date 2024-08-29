@@ -38,5 +38,15 @@ pip install pyarrow
 python simple_client.py
 ```
 
+> [!NOTE]
+> This `simple_client.py` parses the multipart response using the multipart
+> message parser from the Python `email` module. This module puts the entire
+> message in memory and seems to spend a lot of time looking for part delimiter
+> and encoding/decoding the parts.
+>
+> The overhead of `multipart/mixed` parsing is 85% on my machine and after the
+> ~1GB Arrow Stream message is fully in memory, it takes only 0.06% of the total
+> execution time to parse it.
+
 [1] The `multipart/mixed` standard, used by HTTP, is derived from the MIME
 standard used in email.
