@@ -24,7 +24,7 @@ This directory contains an example of a Python HTTP client that receives a
 1. Sends an HTTP GET request to a server.
 2. Receives an HTTP 200 response from the server, with the response body
    containing a `multipart/mixed` response.
-3. Parses the `multipart/mixed` response using the `email` module. [1]
+3. Parses the `multipart/mixed` response using the `email` module.[^1]
 4. Extracts the JSON part, parses it and prints a preview of the JSON data.
 5. Extracts the Arrow stream part, reads the Arrow stream, and sums the
    total number of records in the entire Arrow stream.
@@ -48,5 +48,5 @@ python simple_client.py
 > ~1GB Arrow Stream message is fully in memory, it takes only 0.06% of the total
 > execution time to parse it.
 
-[1] The `multipart/mixed` standard, used by HTTP, is derived from the MIME
+[^1]: The `multipart/mixed` standard, used by HTTP, is derived from the MIME
 standard used in email.
