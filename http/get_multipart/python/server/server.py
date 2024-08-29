@@ -119,9 +119,9 @@ def random_multipart_boundary():
     # 28 bytes (224 bits) of entropy is enough to make a collision impossible.
     # See [1] for a mathematical discussion.
     #
-    # The 28 bytes are encoded into URL-safe characters so the string ends
-    # up longer than 28 characters. RFC1341 [2] recommends a maximum boundary
-    # length of 70 characters, so we're well within that limit.
+    # The 28 bytes are encoded into URL-safe characters (alphanumeric, -, and _)
+    # so the string ends up longer than 28 characters. RFC1341 [2] recommends a
+    # maximum boundary length of 70 characters, so we're well within that limit.
     #
     # [1] https://preshing.com/20110504/hash-collision-probabilities/
     # [2] https://www.w3.org/Protocols/rfc1341/7_2_Multipart.html
