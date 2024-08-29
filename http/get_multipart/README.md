@@ -24,8 +24,8 @@ This directory contains examples of HTTP servers/clients that send/receive a mul
 ## Picking a Boundary
 
 The `multipart/mixed` response format uses a boundary string to separate the
-parts. This string **must not appear in the content of any part**
-(RFC 1341[^1]).
+parts. This string **must not appear in the content of any part** according
+to RFC 1341. [^1]
 
 We **do not recommend** checking for the boundary string in the content of the
 parts as that would prevent streaming them. Which would add up to the memory
@@ -34,10 +34,10 @@ usage of the server and waste CPU time.
 ### Recommended Algorithm
 
 For every `multipart/mixed` response produced by the server:
-1. Using a CSPRNG[^2], generate a byte string of enough entropy to make the
-   probability of collision[^3] negligible (at least 160 bits = 20 bytes)[^4].
+1. Using a CSPRNG,[^2] generate a byte string of enough entropy to make the
+   probability of collision[^3] negligible (at least 160 bits = 20 bytes).[^4]
 2. Encode the byte string in a way that is safe to use in HTTP headers. We
-   recommend using `base64url` encoding described in RFC 4648[^5].
+   recommend using `base64url` encoding described in RFC 4648.[^5]
 
 `base64url` encoding is a variant of `base64` encoding that uses `-` and `_`
 instead of `+` and `/` respectively. It also omits padding characters (`=`).
