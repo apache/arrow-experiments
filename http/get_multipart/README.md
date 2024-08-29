@@ -19,4 +19,4 @@
 
 # HTTP GET Arrow Data: Multipart Examples
 
-This directory contains examples of HTTP servers/clients that send/receive a multipart response (`Content-Type: multipart/mixed`) containing JSON data (`Content-Type: application/json`) and Arrow IPC stream data (`Content-Type: application/vnd.apache.arrow.stream`).
+This directory contains examples of HTTP servers/clients that send/receive a multipart response (`Content-Type: multipart/mixed`) containing JSON data (`Content-Type: application/json`), an Arrow IPC stream data (`Content-Type: application/vnd.apache.arrow.stream`), and (optionally) plain text data (`Content-Type: text/plain`).
