@@ -17,7 +17,7 @@
   under the License.
 -->
 
-# HTTP GET Arrow Data in multipart/mixed: Python Client Example
+# HTTP GET Arrow Data in multipart/mixed: Python Server Example
 
 This directory contains an example of a Python HTTP server that sends a
 `multipart/mixed` response to clients. The server:
