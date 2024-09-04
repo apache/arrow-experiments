@@ -49,8 +49,6 @@ To read the resulting file `output.arrows` and retrieve the schema and record ba
   ```
 
 </details>
-
-
 <details>
   <summary>Example: Read Arrow IPC stream file with R</summary>
 
