@@ -28,7 +28,7 @@ To run this example, first start one of the server examples in the parent direct
 
 ### Reading the Resulting Arrow IPC Stream File
 
-To read the resulting file `output.arrows` and view the schema and record batches that it contains, you can use one of the code examples below, or use similar examples in other languages that have Arrow implementations:
+To read the resulting file `output.arrows` and retrieve the schema and record batches that it contains, you can use one of the code examples below, or use similar examples in other languages that have Arrow implementations:
 
 <details>
   <summary>Example: Read Arrow IPC stream file with Python</summary>
