@@ -58,5 +58,5 @@ batch <- reader$read_next_batch()
 # ...
 
 # or alternatively:
-table = reader$read_table()
+table <- reader$read_table()
 ```
