@@ -26,37 +26,45 @@ This directory contains a simple `curl` command that:
 
 To run this example, first start one of the server examples in the parent directory, then run the `curl` command.
 
-To read the file `output.arrows` and view the schema and record batches that it contains, you can use one of the code examples below, or use similar examples in other languages that have Arrow implementations:
+### Reading the Resulting Arrow IPC Stream File
 
-### Python
+To read the resulting file `output.arrows` and view the schema and record batches that it contains, you can use one of the code examples below, or use similar examples in other languages that have Arrow implementations:
 
-```py
-import pyarrow as pa
+<details>
+  <summary>Example: Read Arrow IPC stream file with Python</summary>
 
-with open("output.arrows", "rb") as f:
-    reader = pa.ipc.open_stream(pa.BufferReader(f.read()))
+  ```py
+  import pyarrow as pa
 
-schema = reader.schema
+  with open("output.arrows", "rb") as f:
+      reader = pa.ipc.open_stream(pa.BufferReader(f.read()))
 
-batch = reader.read_next_batch()
-# ...
+  schema = reader.schema
 
-# or alternatively:
-batches = [b for b in reader]
-```
+  batch = reader.read_next_batch()
+  # ...
 
-### R
+  # or alternatively:
+  batches = [b for b in reader]
+  ```
 
-```r
-library(arrow)
+</details>
 
-reader <- RecordBatchStreamReader$create(ReadableFile$create("output.arrows"))
 
-schema <- reader$schema
+<details>
+  <summary>Example: Read Arrow IPC stream file with R</summary>
 
-batch <- reader$read_next_batch()
-# ...
+  ```r
+  library(arrow)
 
-# or alternatively:
-table <- reader$read_table()
-```
+  reader <- RecordBatchStreamReader$create(ReadableFile$create("output.arrows"))
+
+  schema <- reader$schema
+
+  batch <- reader$read_next_batch()
+  # ...
+
+  # or alternatively:
+  table <- reader$read_table()
+  ```
+</details>
