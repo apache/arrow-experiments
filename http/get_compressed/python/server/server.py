@@ -294,37 +294,55 @@ def generate_single_buffer(schema, source, coding):
         sink.close_now()
 
 
-def generate_buffers(coding, schema, source):
-    compression = "brotli" if coding == "br" else coding
-    with LateClosingBytesIO() as sink, pa.CompressedOutputStream(
-        sink, compression
-    ) as compressor:
-        # pyarrow.ipc.RecordBatchStream writer that writes into the compressor
-        # which compresses data on the fly. Compressed data is written to the
-        # io.BytesIO sink which holds the buffer we give to the caller.
-        writer = pa.ipc.new_stream(compressor, schema)
-        print(type(writer))
-        try:
-            while True:
-                sink.seek(0)
-                writer.write_batch(source.read_next_batch())
-                compressor.flush()
-                sink.truncate()
-                with sink.getbuffer() as buffer:
-                    print(len(buffer))
-                    yield buffer
-        except StopIteration:
-            print("StopIteration")
-            pass
+def generate_buffers(schema, source, coding):
+    # the sink holds the buffer and we give a view of it to the caller
+    with LateClosingBytesIO() as sink:
+        # keep buffering until we have at least MIN_BUFFER_SIZE bytes
+        # in the buffer before yielding it to the caller
+        MIN_BUFFER_SIZE = 256 * 1024
+        if coding == "identity":
+            # source: RecordBatchReader
+            #   |> writer: RecordBatchStreamWriter
+            #   |> sink: LateClosingBytesIO
+            writer = pa.ipc.new_stream(sink, schema)
+            try:
+                while True:
+                    writer.write_batch(source.read_next_batch())
+                    if sink.tell() >= MIN_BUFFER_SIZE:
+                        sink.truncate()
+                        with sink.getbuffer() as buffer:
+                            yield buffer
+                        sink.seek(0)
+            except StopIteration:
+                pass
 
-        print("At the end")
-        sink.seek(0)
-        writer.close()
-        compressor.close()
-        sink.truncate()
-        with sink.getbuffer() as buffer:
-            yield buffer
-        sink.close_now()
+            writer.close()  # write EOS marker and flush
+        else:
+            compression = "brotli" if coding == "br" else coding
+            with pa.CompressedOutputStream(sink, compression) as compressor:
+                # source: RecordBatchReader
+                #   |> writer: RecordBatchStreamWriter
+                #   |> compressor: CompressedOutputStream
+                #   |> sink: LateClosingBytesIO
+                writer = pa.ipc.new_stream(compressor, schema)
+                try:
+                    while True:
+                        writer.write_batch(source.read_next_batch())
+                        if sink.tell() >= MIN_BUFFER_SIZE:
+                            sink.truncate()
+                            with sink.getbuffer() as buffer:
+                                yield buffer
+                            sink.seek(0)
+                except StopIteration:
+                    pass
+
+                writer.close()  # write EOS marker and flush
+                compressor.close()
+
+            sink.truncate()
+            with sink.getbuffer() as buffer:
+                yield buffer
+            sink.close_now()
 
 
 AVAILABLE_ENCODINGS = ["zstd", "br", "gzip", "deflate"]
