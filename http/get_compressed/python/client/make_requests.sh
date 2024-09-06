@@ -26,9 +26,9 @@ OUT2=output2.arrows
 $CURL --http1.0 -o $OUT $URI
 # ...but it may be compressed with an explicitly set Accept-Encoding
 # header
-$CURL --http1.0 -H "Accept-Encoding: gzip" -o $OUT.gz $URI
-$CURL --http1.0 -H "Accept-Encoding: zstd" -o $OUT.zstd $URI
-$CURL --http1.0 -H "Accept-Encoding: br" -o $OUT.brotli $URI
+$CURL --http1.0 -H "Accept-Encoding: gzip, *;q=0" -o $OUT.gz $URI
+$CURL --http1.0 -H "Accept-Encoding: zstd, *;q=0" -o $OUT.zstd $URI
+$CURL --http1.0 -H "Accept-Encoding: br, *;q=0" -o $OUT.brotli $URI
 
 # HTTP/1.1 means compression is on by default...
 # ...but it can be refused with the Accept-Encoding: identity header.
@@ -36,5 +36,5 @@ $CURL -H "Accept-Encoding: identity" -o $OUT2 $URI
 # ...with gzip if no Accept-Encoding header is set.
 $CURL -o $OUT2.gz $URI
 # ...or with the compression algorithm specified in the Accept-Encoding.
-$CURL -H "Accept-Encoding: zstd" -o $OUT2.zstd $URI
-$CURL -H "Accept-Encoding: br" -o $OUT2.brotli $URI
+$CURL -H "Accept-Encoding: zstd, *;q=0" -o $OUT2.zstd $URI
+$CURL -H "Accept-Encoding: br, *;q=0" -o $OUT2.brotli $URI

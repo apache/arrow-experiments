@@ -345,7 +345,7 @@ def generate_buffers(schema, source, coding):
             sink.close_now()
 
 
-AVAILABLE_ENCODINGS = ["zstd", "br", "gzip", "deflate"]
+AVAILABLE_ENCODINGS = ["zstd", "br", "gzip"]
 """
 List of available content-codings as used in HTTP.
 
