@@ -416,6 +416,9 @@ class MyRequestHandler(BaseHTTPRequestHandler):
         # self.send_header('Access-Control-Allow-Methods', 'GET')
         # self.send_header('Access-Control-Allow-Headers', 'Content-Type')
         self.send_header("Content-Type", "application/vnd.apache.arrow.stream")
+        # suggest a default filename in case this response is saved by the user
+        self.send_header("Content-Disposition", r'attachment; filename="output.arrows"')
+
         if coding != "identity":
             self.send_header("Content-Encoding", coding)
         if chunked:
