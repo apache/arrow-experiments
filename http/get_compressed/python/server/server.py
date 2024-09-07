@@ -303,16 +303,13 @@ def generate_chunk_buffers(schema, source, coding):
             #   |> writer: RecordBatchStreamWriter
             #   |> sink: LateClosingBytesIO
             writer = pa.ipc.new_stream(sink, schema)
-            try:
-                while True:
-                    writer.write_batch(source.read_next_batch())
-                    if sink.tell() >= MIN_BUFFER_SIZE:
-                        sink.truncate()
-                        with sink.getbuffer() as buffer:
-                            yield buffer
-                        sink.seek(0)
-            except StopIteration:
-                pass
+            for batch in source:
+                writer.write_batch(batch)
+                if sink.tell() >= MIN_BUFFER_SIZE:
+                    sink.truncate()
+                    with sink.getbuffer() as buffer:
+                        yield buffer
+                    sink.seek(0)
 
             writer.close()  # write EOS marker and flush
         else:
@@ -323,16 +320,13 @@ def generate_chunk_buffers(schema, source, coding):
                 #   |> compressor: CompressedOutputStream
                 #   |> sink: LateClosingBytesIO
                 writer = pa.ipc.new_stream(compressor, schema)
-                try:
-                    while True:
-                        writer.write_batch(source.read_next_batch())
-                        if sink.tell() >= MIN_BUFFER_SIZE:
-                            sink.truncate()
-                            with sink.getbuffer() as buffer:
-                                yield buffer
-                            sink.seek(0)
-                except StopIteration:
-                    pass
+                for batch in source:
+                    writer.write_batch(batch)
+                    if sink.tell() >= MIN_BUFFER_SIZE:
+                        sink.truncate()
+                        with sink.getbuffer() as buffer:
+                            yield buffer
+                        sink.seek(0)
 
                 writer.close()  # write EOS marker and flush
                 compressor.close()
