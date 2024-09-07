@@ -23,11 +23,9 @@ import re
 import socketserver
 import string
 
-# HTTP/1.1: Use chunked responses for HTTP/1.1 requests.
-USE_CHUNKED_HTTP1_1_ENCODING = True
-# HTTP/1.0: put entire response in a buffer, set the Content-Length header,
-# and send it all at once. If False, stream the response into the socket.
-BUFFER_HTTP1_0_CONTENT = False
+# put entire response in a buffer, set the Content-Length header, and
+# send it all at once. If False, stream the response into the socket.
+BUFFER_ENTIRE_RESPONSE = False
 
 
 def random_string(alphabet, length):
@@ -386,7 +384,7 @@ class MyRequestHandler(BaseHTTPRequestHandler):
             chunked = False
         else:
             self.protocol_version = "HTTP/1.1"
-            chunked = USE_CHUNKED_HTTP1_1_ENCODING
+            chunked = not BUFFER_ENTIRE_RESPONSE
 
         coding = None
         parsing_error = None
@@ -412,13 +410,13 @@ class MyRequestHandler(BaseHTTPRequestHandler):
         source = self._resolve_batches()
 
         self.send_response(200)
-        self.send_header("Content-Type", "application/vnd.apache.arrow.stream")
-        if coding != "identity":
-            self.send_header("Content-Encoding", coding)
         ### set these headers if testing with a local browser-based client:
         # self.send_header('Access-Control-Allow-Origin', 'http://localhost:8008')
         # self.send_header('Access-Control-Allow-Methods', 'GET')
         # self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.send_header("Content-Type", "application/vnd.apache.arrow.stream")
+        if coding != "identity":
+            self.send_header("Content-Encoding", coding)
         if chunked:
             self.send_header("Transfer-Encoding", "chunked")
             self.end_headers()
@@ -427,17 +425,16 @@ class MyRequestHandler(BaseHTTPRequestHandler):
                 self.wfile.write(buffer)
                 self.wfile.write("\r\n".encode("utf-8"))
             self.wfile.write("0\r\n\r\n".encode("utf-8"))
-        else:
-            if BUFFER_HTTP1_0_CONTENT:
-                for buffer in generate_single_buffer(the_schema, source, coding):
-                    self.send_header("Content-Length", str(len(buffer)))
-                    self.end_headers()
-                    self.wfile.write(buffer)
-                    break
-            else:
+        elif BUFFER_ENTIRE_RESPONSE:
+            for buffer in generate_single_buffer(the_schema, source, coding):
+                self.send_header("Content-Length", str(len(buffer)))
                 self.end_headers()
-                sink = SocketWriterSink(self.wfile)
-                stream_all(the_schema, source, coding, sink)
+                self.wfile.write(buffer)
+                break
+        else:
+            self.end_headers()
+            sink = SocketWriterSink(self.wfile)
+            stream_all(the_schema, source, coding, sink)
 
 
 print("Generating example data...")
