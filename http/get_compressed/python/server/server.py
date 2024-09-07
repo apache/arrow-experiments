@@ -331,10 +331,10 @@ def generate_chunk_buffers(schema, source, coding):
                 writer.close()  # write EOS marker and flush
                 compressor.close()
 
-            sink.truncate()
-            with sink.getbuffer() as buffer:
-                yield buffer
-            sink.close_now()
+        sink.truncate()
+        with sink.getbuffer() as buffer:
+            yield buffer
+        sink.close_now()
 
 
 AVAILABLE_ENCODINGS = ["zstd", "br", "gzip"]
