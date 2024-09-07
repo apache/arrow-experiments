@@ -224,6 +224,7 @@ class LateClosingBytesIO(io.BytesIO):
     to be able to create a memory view of the buffer. But that is only possible
     if the BytesIO object is not closed yet.
     """
+
     def close(self):
         pass
 
@@ -233,6 +234,7 @@ class LateClosingBytesIO(io.BytesIO):
 
 class SocketWriterSink(socketserver._SocketWriter):
     """Wrapper to make wfile usable as a sink for Arrow stream writing."""
+
     def __init__(self, wfile):
         self.wfile = wfile
 
@@ -387,7 +389,12 @@ class MyRequestHandler(BaseHTTPRequestHandler):
             # if the Accept-Encoding header is not explicitly set, return the
             # uncompressed data for HTTP/1.0 requests and compressed data for
             # HTTP/1.1 requests with the safest compression format choice: "gzip".
-            coding = "identity" if self.request_version == "HTTP/1.0" else "gzip"
+            coding = (
+                "identity"
+                if self.request_version == "HTTP/1.0"
+                or ("gzip" not in AVAILABLE_ENCODINGS)
+                else "gzip"
+            )
         else:
             try:
                 coding = pick_coding(accept_encoding, AVAILABLE_ENCODINGS)
