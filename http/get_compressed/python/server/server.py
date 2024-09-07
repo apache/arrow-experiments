@@ -275,7 +275,7 @@ def stream_all(schema, source, coding, sink):
             compressor.close()
 
 
-def generate_single_buffer(schema, source, coding):
+def generate_response_buffer(schema, source, coding):
     """
     Put all the record batches from the source into a single buffer.
 
@@ -292,7 +292,7 @@ def generate_single_buffer(schema, source, coding):
         sink.close_now()
 
 
-def generate_buffers(schema, source, coding):
+def generate_chunk_buffers(schema, source, coding):
     # the sink holds the buffer and we give a view of it to the caller
     with LateClosingBytesIO() as sink:
         # keep buffering until we have at least MIN_BUFFER_SIZE bytes
@@ -420,13 +420,13 @@ class MyRequestHandler(BaseHTTPRequestHandler):
         if chunked:
             self.send_header("Transfer-Encoding", "chunked")
             self.end_headers()
-            for buffer in generate_buffers(the_schema, source, coding):
+            for buffer in generate_chunk_buffers(the_schema, source, coding):
                 self.wfile.write(f"{len(buffer):X}\r\n".encode("utf-8"))
                 self.wfile.write(buffer)
                 self.wfile.write("\r\n".encode("utf-8"))
             self.wfile.write("0\r\n\r\n".encode("utf-8"))
         elif BUFFER_ENTIRE_RESPONSE:
-            for buffer in generate_single_buffer(the_schema, source, coding):
+            for buffer in generate_response_buffer(the_schema, source, coding):
                 self.send_header("Content-Length", str(len(buffer)))
                 self.end_headers()
                 self.wfile.write(buffer)
