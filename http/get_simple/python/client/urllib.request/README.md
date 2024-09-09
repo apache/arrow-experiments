@@ -17,9 +17,16 @@
   under the License.
 -->
 
-# HTTP GET Arrow Data: Simple Python Server Examples
+# HTTP GET Arrow Data: Simple Python Client Example with `urllib.request`
 
-This directory contains minimal examples of HTTP servers implemented in Python using various libraries. Each of these servers:
-1. Creates a list of record batches and populates it with synthesized data.
-2. Listens for HTTP GET requests from clients.
-3. Upon receiving a request, sends an HTTP 200 response with the body containing an Arrow IPC stream of record batches.
+This directory contains a minimal example of an HTTP client implemented in Python using the built-in [`urllib.request`](https://docs.python.org/3/library/urllib.request.html) module. The client:
+1. Sends an HTTP GET request to a server.
+2. Receives an HTTP 200 response from the server, with the response body containing an Arrow IPC stream of record batches.
+3. Adds the record batches to a list as they are received.
+
+To run this example, first start one of the server examples in the parent directory, then:
+
+```sh
+pip install pyarrow
+python client.py
+```
