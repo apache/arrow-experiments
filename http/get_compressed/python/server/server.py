@@ -299,9 +299,9 @@ def generate_chunk_buffers(schema, source, coding):
     with LateClosingBytesIO() as sink:
         # keep buffering until we have at least MIN_BUFFER_SIZE bytes
         # in the buffer before yielding it to the caller. Setting it
-        # to 1 means we yield as soon as the compression frames are
+        # to 1 means we yield as soon as the compression blocks are
         # formed and reach the sink buffer.
-        MIN_BUFFER_SIZE = 1
+        MIN_BUFFER_SIZE = 64 * 1024
         if coding == "identity":
             # source: RecordBatchReader
             #   |> writer: RecordBatchStreamWriter
@@ -319,6 +319,8 @@ def generate_chunk_buffers(schema, source, coding):
         else:
             compression = "brotli" if coding == "br" else coding
             with pa.CompressedOutputStream(sink, compression) as compressor:
+                # has the first buffer been yielded already?
+                sent_first = False
                 # source: RecordBatchReader
                 #   |> writer: RecordBatchStreamWriter
                 #   |> compressor: CompressedOutputStream
@@ -326,15 +328,16 @@ def generate_chunk_buffers(schema, source, coding):
                 writer = pa.ipc.new_stream(compressor, schema)
                 for batch in source:
                     writer.write_batch(batch)
-                    # A record batch might be buffered in the
-                    # CompressorOutputStream before a full compression frame is
-                    # written to the sink, so we must check the sink size since
-                    # the last time we yielded a memory view.
-                    if sink.tell() >= MIN_BUFFER_SIZE:
+                    # we try to yield a buffer ASAP no matter how small
+                    if not sent_first and sink.tell() == 0:
+                        compressor.flush()
+                    pos = sink.tell()
+                    if pos >= MIN_BUFFER_SIZE or (not sent_first and pos >= 1):
                         sink.truncate()
                         with sink.getbuffer() as buffer:
                             yield buffer
                         sink.seek(0)
+                        sent_first = True
 
                 writer.close()  # write EOS marker and flush
                 compressor.close()
