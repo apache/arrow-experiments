@@ -298,8 +298,10 @@ def generate_chunk_buffers(schema, source, coding):
     # the sink holds the buffer and we give a view of it to the caller
     with LateClosingBytesIO() as sink:
         # keep buffering until we have at least MIN_BUFFER_SIZE bytes
-        # in the buffer before yielding it to the caller
-        MIN_BUFFER_SIZE = 256 * 1024
+        # in the buffer before yielding it to the caller. Setting it
+        # to 1 means we yield as soon as the compression frames are
+        # formed and reach the sink buffer.
+        MIN_BUFFER_SIZE = 1
         if coding == "identity":
             # source: RecordBatchReader
             #   |> writer: RecordBatchStreamWriter
@@ -324,6 +326,10 @@ def generate_chunk_buffers(schema, source, coding):
                 writer = pa.ipc.new_stream(compressor, schema)
                 for batch in source:
                     writer.write_batch(batch)
+                    # A record batch might be buffered in the
+                    # CompressorOutputStream before a full compression frame is
+                    # written to the sink, so we must check the sink size since
+                    # the last time we yielded a memory view.
                     if sink.tell() >= MIN_BUFFER_SIZE:
                         sink.truncate()
                         with sink.getbuffer() as buffer:
