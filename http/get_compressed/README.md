@@ -83,6 +83,16 @@ must include a `Content-Encoding` header in the response.
     response MUST include a Content-Encoding entity-header (section
     14.11) that lists the non-identity content-coding(s) used.
 
+Since not all servers implement the full `Accept-Encoding` header parsing
+logic, clients tend to stick to simple header values like
+`Accept-Encoding: identity` when no compression is desired, and
+`Accept-Encoding: gzip, deflate, zstd, br` when the client supports different
+compression formats and is indifferent to which one the server chooses. Clients
+should expect uncompressed responses as well in theses cases. The only way to
+force a "406 Not Acceptable" response when no compression is available is to
+send `identity;q=0` or `*;q=0` somewhere in the end of the `Accept-Encoding`
+header. But that relies on the server implementing the full `Accept-Encoding`
+handling logic.
 
 [^1]: [Fielding, R. et al. (1999). HTTP/1.1. RFC 2616, Section 14.3 Accept-Encoding.](https://www.rfc-editor.org/rfc/rfc2616#section-14.3)
 [^2]: [MDN Web Docs: Accept-Encoding](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Encoding#browser_compatibility)
