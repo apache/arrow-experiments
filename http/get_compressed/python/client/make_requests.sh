@@ -37,4 +37,4 @@ $CURL -H "Accept-Encoding: identity" -o $OUT2 $URI
 $CURL -o $OUT2.gz $URI
 # ...or with the compression algorithm specified in the Accept-Encoding.
 $CURL -H "Accept-Encoding: zstd, *;q=0" -o $OUT2.zstd $URI
-$CURL -H "Accept-Encoding: br, *;q=0" -o $OUT2.brotli $URI
+$CURL -H "Accept-Encoding: br, *;q=0" -o $OUT2.br $URI
