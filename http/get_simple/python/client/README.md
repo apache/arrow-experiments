@@ -17,16 +17,9 @@
   under the License.
 -->
 
-# HTTP GET Arrow Data: Simple Python Client Example
+# HTTP GET Arrow Data: Simple Python Client Examples
 
-This directory contains a minimal example of an HTTP client implemented in Python. The client:
+This directory contains minimal examples of HTTP clients implemented in Python using various libraries. Each of these clients:
 1. Sends an HTTP GET request to a server.
 2. Receives an HTTP 200 response from the server, with the response body containing an Arrow IPC stream of record batches.
 3. Adds the record batches to a list as they are received.
-
-To run this example, first start one of the server examples in the parent directory, then:
-
-```sh
-pip install pyarrow
-python client.py
-```

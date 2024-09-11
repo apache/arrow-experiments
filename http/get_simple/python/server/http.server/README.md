@@ -17,9 +17,19 @@
   under the License.
 -->
 
-# HTTP GET Arrow Data: Simple Python Server Examples
+# HTTP GET Arrow Data: Simple Python Server Example with `http.server`
 
-This directory contains minimal examples of HTTP servers implemented in Python using various libraries. Each of these servers:
+This directory contains a minimal example of an HTTP server implemented in Python using the built-in [`http.server`](https://docs.python.org/3/library/http.server.html) module. The server:
 1. Creates a list of record batches and populates it with synthesized data.
 2. Listens for HTTP GET requests from clients.
 3. Upon receiving a request, sends an HTTP 200 response with the body containing an Arrow IPC stream of record batches.
+
+To run this example:
+
+```sh
+pip install pyarrow
+python server.py
+```
+
+> [!NOTE]  
+> This example implements [chunked transfer encoding](https://en.wikipedia.org/wiki/Chunked_transfer_encoding) manually. Other servers may implement chunked transfer encoding automatically at the cost of an undesirable new layer of buffering. Arrow IPC streams already offer a natural way of chunking large amounts of tabular data. It's not a general requirement, but in this example each chunk corresponds to one Arrow record batch.
