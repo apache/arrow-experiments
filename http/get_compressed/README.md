@@ -21,6 +21,42 @@
 
 This directory contains examples of HTTP servers/clients that transmit/receive data in the Arrow IPC streaming format and use compression (in various ways) to reduce the size of the transmitted data.
 
+Since we re-use the [Arrow IPC format][ipc] for transferring Arrow data over
+HTTP and both Arrow IPC and HTTP standards support compression on their own,
+there are at least two approaches to this problem:
+
+1. Compressed HTTP responses carrying Arrow IPC streams with uncompressed
+   array buffers.
+2. Uncompressed HTTP responses carrying Arrow IPC streams with compressed
+   array buffers.
+
+Applying IPC buffer and HTTP compression at the same is not recommended. The
+extra CPU overhead of decompressing the data twice is not worth any possible
+gains that double compression might bring. If compression ratios are
+unambiguously more important than reducing CPU overhead, then a different
+compression algorithm that optimizes for that can be chosen.
+
+This table shows the support for different compression algorithms in HTTP and
+Arrow IPC:
+
+| Format             | HTTP Support    | IPC Support     |
+| ------------------ | --------------- | --------------- |
+| gzip (GZip)        | X               |                 |
+| deflate (DEFLATE)  | X               |                 |
+| br (Brotli)        | X[^2]           |                 |
+| zstd (Zstandard)   | X[^2]           | X               |
+| lz4 (LZ4)          |                 | X               |
+
+Since not all Arrow IPC implementations support compression, HTTP compression
+based on accepted formats negotiated with the client is a great way to increase
+the chances of efficient data transfer.
+
+Servers may check the `Accept-Encoding` header of the client and choose the
+compression format in this order of preference: `zstd`, `br`, `gzip`,
+`identity` (no compression). If the client does not specify a preference, the
+only constraint on the server is the availability of the compression algorithm
+in the server environment.
+
 ## HTTP/1.1 Response Compression
 
 HTTP/1.1 offers an elaborate way for clients to specify their preferred
@@ -94,5 +130,11 @@ send `identity;q=0` or `*;q=0` somewhere in the end of the `Accept-Encoding`
 header. But that relies on the server implementing the full `Accept-Encoding`
 handling logic.
 
+## Arrow IPC Compression
+
+TODO: this section will be added once examples are expanded to include Arrow IPC compression.
+
 [^1]: [Fielding, R. et al. (1999). HTTP/1.1. RFC 2616, Section 14.3 Accept-Encoding.](https://www.rfc-editor.org/rfc/rfc2616#section-14.3)
 [^2]: [MDN Web Docs: Accept-Encoding](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Encoding#browser_compatibility)
+
+[ipc]: https://arrow.apache.org/docs/format/Columnar.html#serialization-and-interprocess-communication-ipc
