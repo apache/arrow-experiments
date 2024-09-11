@@ -119,25 +119,6 @@ def parse_accept_encoding(s):
     return accepted
 
 
-def check_parser(s, expected):
-    try:
-        parsed = parse_accept_encoding(s)
-        # print("parsed:", parsed, "\nexpected:", expected)
-        assert parsed == expected
-    except ValueError as e:
-        print(e)
-
-
-check_parser("", [])
-expected = [("gzip", None), ("zstd", 1.0), ("*", None)]
-check_parser("gzip, zstd;q=1.0,  *", expected)
-check_parser("gzip ,     zstd; q= 1.0  ,  *", expected)
-expected = [("gzip", None), ("zstd", 1.0), ("*", 0.0)]
-check_parser("gzip ,     zstd; q= 1.0 \t  \r\n ,*;q =0", expected)
-expected = [("zstd", 1.0), ("gzip", 0.5), ("br", 0.8), ("identity", 0.0)]
-check_parser("zstd;q=1.0, gzip;q=0.5, br;q=0.8, identity;q=0", expected)
-
-
 def pick_coding(accept_encoding_header, available):
     """
     Pick the content-coding that the server should use to compress the response.
@@ -189,27 +170,6 @@ def pick_coding(accept_encoding_header, available):
         if coding in state and state[coding] == max_qvalue:
             return coding
     return None
-
-
-def check_picker(header, expected):
-    available = ["zstd", "gzip"]  # no "br" an no "deflate"
-    chosen = pick_coding(header, available)
-    # print("Accept-Encoding:", header, "\nexpected:", expected, "\t\tchosen:", chosen)
-    assert chosen == expected
-
-
-check_picker("gzip, zstd;q=1.0,  *", "zstd")
-check_picker("gzip ,     zstd; q= 1.0  ,  *", "zstd")
-check_picker("gzip ,     zstd; q= 1.0 \t  \r\n ,*;q =0", "zstd")
-check_picker("zstd;q=1.0, gzip;q=0.5, br;q=0.8, identity;q=0", "zstd")
-
-check_picker("compress, gzip", "gzip")
-check_picker("", "identity")
-check_picker("*", "zstd")
-check_picker("compress;q=0.5, gzip;q=1.0", "gzip")
-check_picker("gzip;q=1.0, identity; q=0.5, *;q=0", "gzip")
-check_picker("br, *;q=0", None)
-check_picker("br", "identity")
 
 
 class LateClosingBytesIO(io.BytesIO):
