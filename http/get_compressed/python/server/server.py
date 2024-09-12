@@ -97,10 +97,31 @@ def example_batches(tickers):
 
 # [L]inear [W]hite [S]pace pattern (HTTP/1.1 - RFC 2616)
 LWS_RE = "(?:[ \\t]|\\r\\n[ \\t]+)*"
-CONTENT_CODING_PATTERN = re.compile(
-    r"%s(?:([A-Za-z]+|\*)%s(?:;%sq%s=(%s[01]+(?:\.\d{1,3})?))?%s)?"
-    % (LWS_RE, LWS_RE, LWS_RE, LWS_RE, LWS_RE, LWS_RE)
+# tokenizer pattern to support the Accept-Encoding header parser
+TOKENS_PATTERN = re.compile(
+    r"(?P<ID>[A-Za-z][A-Za-z0-9]*|\*)"  # a name or a wildcard token
+    r"|(?P<COMMA>,)"
+    r"|(?P<SEMI>;)"
+    r"|(?P<EQ>=)"
+    r"|(?P<NUM>\d+(\.\d{1,3})?)"
+    f"|(?P<SKIP>{LWS_RE})"
+    r"|(?P<MISMATCH>.+)"
 )
+
+
+def unexpected(header_name, label, value):
+    msg = f"Malformed {header_name} header: unexpected {label} at {value!r}"
+    return ValueError(msg)
+
+
+def tokenize(header_name, s):
+    for mo in re.finditer(TOKENS_PATTERN, s):
+        kind = mo.lastgroup
+        if kind == "SKIP":
+            continue
+        elif kind == "MISMATCH":
+            raise unexpected(header_name, "character", mo.group())
+        yield [kind, mo.group()]
 
 
 def parse_accept_encoding(s):
@@ -113,18 +134,40 @@ def parse_accept_encoding(s):
         The list of lowercase codings (or "*") and their qvalues in the order
         they appear in the header. The qvalue is None if not specified.
     """
-    pieces = s.split(",")
+    AE = "Accept-Encoding"
+    tokens = tokenize(AE, s)
+
+    def expect(expected_kind):
+        kind, value = next(tokens)
+        if kind != expected_kind:
+            raise unexpected(AE, "token", value)
+        return value
+
     accepted = []
-    for piece in pieces:
-        m = re.fullmatch(CONTENT_CODING_PATTERN, piece)
-        if m is None:
-            raise ValueError(f"Malformed Accept-Encoding header: {s!r}")
-        if m.group(1) is None:  # whitespace is skipped
-            continue
-        coding = m.group(1).lower()
-        qvalue = m.group(2)
-        pair = coding, float(qvalue) if qvalue is not None else None
-        accepted.append(pair)
+    while True:
+        try:
+            coding = None
+            qvalue = None
+            coding = expect("ID").lower()
+            kind, value = next(tokens)
+            if kind == "COMMA":
+                accepted.append((coding, qvalue))
+                continue
+            if kind == "SEMI":
+                value = expect("ID")
+                if value != "q":
+                    raise unexpected(AE, "token", value)
+                expect("EQ")
+                qvalue = float(expect("NUM"))
+                expect("COMMA")
+                accepted.append((coding, qvalue))
+                continue
+            raise unexpected(AE, "token", value)
+        except StopIteration:
+            break
+    # this parser ignores any unfinished ;q=NUM sequence or trailing commas
+    if coding is not None:
+        accepted.append((coding, qvalue))
     return accepted
 
 
