@@ -57,6 +57,30 @@ compression format in this order of preference: `zstd`, `br`, `gzip`,
 only constraint on the server is the availability of the compression algorithm
 in the server environment.
 
+## Arrow IPC Compression
+
+When IPC buffer compression is preferred and servers can't assume all clients
+support it[^3], clients may be asked to explicitly list the supported compression
+algorithms in the request headers. The `Accept` header can be used for this
+since `Accept-Encoding` (and `Content-Encoding`) is used to control compression
+of the entire HTTP response stream and instruct HTTP clients (like browsers) to
+decompress the response before giving data to the application or saving the
+data.
+
+    Accept: application/vnd.apache.arrow.ipc; codecs="zstd, lz4"
+
+There is similar to clients requesting video streams by specifying the
+container format and the codecs they support
+(e.g. `Accept: video/webm; codecs="vp8, vorbis"`).
+
+The server is allowed to choose any of the listed codecs, or not compress the
+IPC buffers at all. Uncompressed IPC buffers should always be acceptable by
+clients.
+
+If a server adopts this approach and a client does not specify any codecs in
+the `Accept` header, the server can fall back to checking `Accept-Encoding`
+header to pick a compression algorithm for the entire HTTP response stream.
+
 ## HTTP/1.1 Response Compression
 
 HTTP/1.1 offers an elaborate way for clients to specify their preferred
@@ -130,11 +154,10 @@ send `identity;q=0` or `*;q=0` somewhere in the end of the `Accept-Encoding`
 header. But that relies on the server implementing the full `Accept-Encoding`
 handling logic.
 
-## Arrow IPC Compression
-
-TODO: this section will be added once examples are expanded to include Arrow IPC compression.
 
 [^1]: [Fielding, R. et al. (1999). HTTP/1.1. RFC 2616, Section 14.3 Accept-Encoding.](https://www.rfc-editor.org/rfc/rfc2616#section-14.3)
 [^2]: [MDN Web Docs: Accept-Encoding](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Encoding#browser_compatibility)
+[^3]: Web applications using the JavaScript Arrow implementation don't have
+    access to the compression APIs to decompress `zstd` and `lz4` IPC buffers.
 
 [ipc]: https://arrow.apache.org/docs/format/Columnar.html#serialization-and-interprocess-communication-ipc
