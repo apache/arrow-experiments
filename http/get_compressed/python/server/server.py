@@ -19,6 +19,7 @@ from random import choice, randint
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import io
 import pyarrow as pa
+import pyarrow.compute as pc
 import re
 import socketserver
 import string
@@ -26,6 +27,9 @@ import string
 # put entire response in a buffer, set the Content-Length header, and
 # send it all at once. If False, stream the response into the socket.
 BUFFER_ENTIRE_RESPONSE = False
+
+# use dictionary encoding for the ticker column
+USE_DICTIONARY_ENCODING = True
 
 
 def random_string(alphabet, length):
@@ -47,9 +51,12 @@ def example_tickers(num_tickers):
     return tickers
 
 
+the_ticker_type = (
+    pa.dictionary(pa.int32(), pa.utf8()) if USE_DICTIONARY_ENCODING else pa.utf8()
+)
 the_schema = pa.schema(
     [
-        ("ticker", pa.utf8()),
+        ("ticker", the_ticker_type),
         ("price", pa.int64()),
         ("volume", pa.int64()),
     ]
@@ -57,13 +64,19 @@ the_schema = pa.schema(
 
 
 def example_batch(tickers, length):
-    data = {"ticker": [], "price": [], "volume": []}
+    ticker_indices = []
+    price = []
+    volume = []
     for _ in range(length):
-        data["ticker"].append(choice(tickers))
-        data["price"].append(randint(1, 1000) * 100)
-        data["volume"].append(randint(1, 10000))
-
-    return pa.RecordBatch.from_pydict(data, the_schema)
+        ticker_indices.append(randint(0, len(tickers) - 1))
+        price.append(randint(1, 1000) * 100)
+        volume.append(randint(1, 10000))
+    ticker = (
+        pa.DictionaryArray.from_arrays(ticker_indices, tickers)
+        if USE_DICTIONARY_ENCODING
+        else pc.take(tickers, ticker_indices, boundscheck=False)
+    )
+    return pa.RecordBatch.from_arrays([ticker, price, volume], schema=the_schema)
 
 
 def example_batches(tickers):

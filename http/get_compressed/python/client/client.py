@@ -63,18 +63,20 @@ def request_and_process(uri, coding):
         except StopIteration:
             pass
         processing_time = time.time() - start_time
+        reader_stats = reader.stats
     print(
         f"{log_prefix} Schema received in {time_to_schema:.3f} seconds."
         f" schema=({', '.join(schema.names)})."
     )
     print(
-        f"{log_prefix} First batch of {len(batches)} received and processed in"
+        f"{log_prefix} First batch received and processed in"
         f" {time_to_first_batch:.3f} seconds"
     )
     print(
         f"{log_prefix} Processing of all batches completed in"
         f" {processing_time:.3f} seconds."
     )
+    print(f"{log_prefix}", reader_stats)
     return batches
 
 
