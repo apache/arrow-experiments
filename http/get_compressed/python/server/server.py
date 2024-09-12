@@ -95,79 +95,86 @@ def example_batches(tickers):
 
 # end of example data generation
 
+# what the HTTP spec calls a token (any character except CTLs or separators)
+TOKEN_RE = r"(?:[A-Za-z0-9!#$%&'*+./^_`|~-]+)"
 # [L]inear [W]hite [S]pace pattern (HTTP/1.1 - RFC 2616)
-LWS_RE = "(?:[ \\t]|\\r\\n[ \\t]+)*"
-# tokenizer pattern to support the Accept-Encoding header parser
-TOKENS_PATTERN = re.compile(
-    r"(?P<ID>[A-Za-z][A-Za-z0-9]*|\*)"  # a name or a wildcard token
+LWS_RE = r"(?:[ \t]|\r\n[ \t]+)*"
+TOKENIZER_PAT = re.compile(
+    f"(?P<TOK>{TOKEN_RE})"
+    r'|(?P<QUOTED>"([^"\\]|\\.)*")'  # a quoted string (escaped pairs allowed)
     r"|(?P<COMMA>,)"
     r"|(?P<SEMI>;)"
     r"|(?P<EQ>=)"
-    r"|(?P<NUM>\d+(\.\d{1,3})?)"
-    f"|(?P<SKIP>{LWS_RE})"
-    r"|(?P<MISMATCH>.+)"
+    f"|(?P<SKIP>{LWS_RE})"  # LWS is skipped
+    r"|(?P<MISMATCH>.+)",
+    flags=re.ASCII,  # HTTP headers are encoded in ASCII
 )
 
 
-def unexpected(header_name, label, value):
-    msg = f"Malformed {header_name} header: unexpected {label} at {value!r}"
-    return ValueError(msg)
-
-
-def tokenize(header_name, s):
-    for mo in re.finditer(TOKENS_PATTERN, s):
-        kind = mo.lastgroup
-        if kind == "SKIP":
-            continue
-        elif kind == "MISMATCH":
-            raise unexpected(header_name, "character", mo.group())
-        yield [kind, mo.group()]
-
-
-def parse_accept_encoding(s):
+def parse_header_value(header_name, header_value):
     """
-    Parse the Accept-Encoding request header value.
+    Parse the Accept or Accept-Encoding request header values.
 
     Returns
     -------
-    list of (str, float|None)
-        The list of lowercase codings (or "*") and their qvalues in the order
-        they appear in the header. The qvalue is None if not specified.
+    list of (str, dict)
+        The list of lowercase tokens and their parameters in the order they
+        appear in the header. The parameters are stored in a dictionary where
+        the keys are the parameter names and the values are the parameter
+        values. If a parameter is not followed by an equal sign and a value,
+        the value is None.
     """
-    AE = "Accept-Encoding"
-    tokens = tokenize(AE, s)
+
+    def unexpected(label, value):
+        msg = f"Malformed {header_name} header: unexpected {label} at {value!r}"
+        return ValueError(msg)
+
+    def tokenize():
+        for mo in re.finditer(TOKENIZER_PAT, header_value):
+            kind = mo.lastgroup
+            if kind == "SKIP":
+                continue
+            elif kind == "MISMATCH":
+                raise unexpected("character", mo.group())
+            yield (kind, mo.group())
+
+    tokens = tokenize()
 
     def expect(expected_kind):
-        kind, value = next(tokens)
+        kind, text = next(tokens)
         if kind != expected_kind:
-            raise unexpected(AE, "token", value)
-        return value
+            raise unexpected("token", text)
+        return text
 
     accepted = []
     while True:
         try:
-            coding = None
-            qvalue = None
-            coding = expect("ID").lower()
-            kind, value = next(tokens)
-            if kind == "COMMA":
-                accepted.append((coding, qvalue))
-                continue
-            if kind == "SEMI":
-                value = expect("ID")
-                if value != "q":
-                    raise unexpected(AE, "token", value)
-                expect("EQ")
-                qvalue = float(expect("NUM"))
-                expect("COMMA")
-                accepted.append((coding, qvalue))
-                continue
-            raise unexpected(AE, "token", value)
+            name, params = None, {}
+            name = expect("TOK").lower()
+            kind, text = next(tokens)
+            while True:
+                if kind == "COMMA":
+                    accepted.append((name, params))
+                    break
+                if kind == "SEMI":
+                    ident = expect("TOK")
+                    params[ident] = None  # init param to None
+                    kind, text = next(tokens)
+                    if kind != "EQ":
+                        continue
+                    kind, text = next(tokens)
+                    if kind in ["TOK", "QUOTED"]:
+                        if kind == "QUOTED":
+                            text = text[1:-1]  # remove the quotes
+                        params[ident] = text  # set param to value
+                        kind, text = next(tokens)
+                        continue
+                raise unexpected("token", text)
         except StopIteration:
             break
-    # this parser ignores any unfinished ;q=NUM sequence or trailing commas
-    if coding is not None:
-        accepted.append((coding, qvalue))
+    if name is not None:
+        # any unfinished ;param=value sequence or trailing separators are ignored
+        accepted.append((name, params))
     return accepted
 
 
@@ -194,16 +201,22 @@ def pick_coding(accept_encoding_header, available):
         and doesn't accept "identity" (uncompressed) either. In this case,
         a "406 Not Acceptable" response should be sent.
     """
-    accepted = parse_accept_encoding(accept_encoding_header)
+    accepted = parse_header_value("Accept-Encoding", accept_encoding_header)
 
-    def value_or(value, default):
-        return default if value is None else value
+    def qvalue_or(params, default):
+        qvalue = params.get("q")
+        if qvalue is not None:
+            try:
+                return float(qvalue)
+            except ValueError:
+                raise ValueError(f"Invalid qvalue in Accept-Encoding header: {qvalue}")
+        return default
 
     if "identity" not in available:
         available = available + ["identity"]
     state = {}
-    for coding, qvalue in accepted:
-        qvalue = value_or(qvalue, 0.0001 if coding == "identity" else 1.0)
+    for coding, params in accepted:
+        qvalue = qvalue_or(params, 0.0001 if coding == "identity" else 1.0)
         if coding == "*":
             for coding in available:
                 if coding not in state:
