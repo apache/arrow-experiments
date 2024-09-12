@@ -178,9 +178,71 @@ def parse_header_value(header_name, header_value):
     return accepted
 
 
+ARROW_STREAM_FORMAT = "application/vnd.apache.arrow.stream"
+
+
+def pick_ipc_codec(accept_header, available, default):
+    """
+    Pick the IPC stream codec according to the Accept header.
+
+    This is used when deciding which codec to use for compression of IPC buffer
+    streams. This is a feature of the Arrow IPC stream format and is different
+    from the HTTP content-coding used to compress the entire HTTP response.
+
+    This is how a client may specify the IPC buffer compression codecs it
+    accepts:
+
+        Accept: application/vnd.apache.arrow.ipc; codecs="zstd, lz4"
+
+    Parameters
+    ----------
+    accept_header : str|None
+        The value of the Accept header from an HTTP request.
+    available : list of str
+        The codecs that the server can provide in the order preferred by the
+        server. Example: ["zstd", "lz4"].
+    default : str|None
+        The codec to use if the client does not specify the ";codecs" parameter
+        in the Accept header.
+
+    Returns
+    -------
+    str|None
+        The codec that the server should use to compress the IPC buffer stream.
+        None if the client does not accept any of the available codecs
+        explicitly listed. ;codecs="" means no codecs are accepted.
+        If the client does not specify the codecs parameter, the default codec
+        is returned.
+    """
+    did_specify_codecs = False
+    accepted_codecs = []
+    if accept_header is not None:
+        accepted = parse_header_value("Accept", accept_header)
+        for media_range, params in accepted:
+            if (
+                media_range == "*/*"
+                or media_range == "application/*"
+                or media_range == ARROW_STREAM_FORMAT
+            ):
+                did_specify_codecs = "codecs" in params
+                codecs_str = params.get("codecs")
+                if codecs_str is None:
+                    continue
+                for codec in codecs_str.split(","):
+                    accepted_codecs.append(codec.strip())
+
+    for codec in available:
+        if codec in accepted_codecs:
+            return codec
+    return None if did_specify_codecs else default
+
+
 def pick_coding(accept_encoding_header, available):
     """
-    Pick the content-coding that the server should use to compress the response.
+    Pick the content-coding according to the Accept-Encoding header.
+
+    This is used when using HTTP response compression instead of IPC buffer
+    compression.
 
     Parameters
     ----------
@@ -188,7 +250,7 @@ def pick_coding(accept_encoding_header, available):
         The value of the Accept-Encoding header from an HTTP request.
     available : list of str
         The content-codings that the server can provide in the order preferred
-        by the server.
+        by the server. Example: ["zstd", "br", "gzip"].
 
     Returns
     -------
@@ -237,6 +299,45 @@ def pick_coding(accept_encoding_header, available):
     return None
 
 
+def pick_compression(headers, available_ipc_codecs, available_codings, default):
+    """
+    Pick the compression strategy based on the Accept and Accept-Encoding headers.
+
+    Parameters
+    ----------
+    headers : dict
+        The HTTP request headers.
+    available_ipc_codecs : list of str
+        The codecs that the server can provide for IPC buffer compression.
+    available_codings : list of str
+        The content-codings that the server can provide for HTTP response
+        compression.
+    default : str
+        The default compression strategy to use if the client does explicitly
+        choose.
+
+    Returns
+    -------
+    str|None
+        The compression strategy to use. It can be one of the following:
+        "identity": no compression at all.
+        "identity+zstd": No HTTP compression + IPC buffer compression with Zstd.
+        "identity+lz4": No HTTP compression + IPC buffer compression with LZ4.
+        "zstd", "br", "gzip", ...: HTTP compression without IPC buffer compression.
+        None means a "406 Not Acceptable" response should be sent.
+    """
+    accept = headers.get("Accept")
+    ipc_codec = pick_ipc_codec(accept, available_ipc_codecs, default=None)
+    if ipc_codec is None:
+        accept_encoding = headers.get("Accept-Encoding")
+        return (
+            default
+            if accept_encoding is None
+            else pick_coding(accept_encoding, available_codings)
+        )
+    return "identity+" + ipc_codec
+
+
 class LateClosingBytesIO(io.BytesIO):
     """
     BytesIO that does not close on close().
@@ -277,7 +378,7 @@ class SocketWriterSink(socketserver._SocketWriter):
         pass
 
 
-def generate_chunk_buffers(schema, source, coding):
+def generate_chunk_buffers(schema, source, compression):
     # the sink holds the buffer and we give a view of it to the caller
     with LateClosingBytesIO() as sink:
         # keep buffering until we have at least MIN_BUFFER_SIZE bytes
@@ -285,11 +386,17 @@ def generate_chunk_buffers(schema, source, coding):
         # to 1 means we yield as soon as the compression blocks are
         # formed and reach the sink buffer.
         MIN_BUFFER_SIZE = 64 * 1024
-        if coding == "identity":
+        if compression.startswith("identity"):
+            if compression == "identity+zstd":
+                options = pa.ipc.IpcWriteOptions(compression="zstd")
+            elif compression == "identity+lz4":
+                options = pa.ipc.IpcWriteOptions(compression="lz4")
+            else:
+                options = None
             # source: RecordBatchReader
             #   |> writer: RecordBatchStreamWriter
             #   |> sink: LateClosingBytesIO
-            writer = pa.ipc.new_stream(sink, schema)
+            writer = pa.ipc.new_stream(sink, schema, options=options)
             for batch in source:
                 writer.write_batch(batch)
                 if sink.tell() >= MIN_BUFFER_SIZE:
@@ -300,7 +407,7 @@ def generate_chunk_buffers(schema, source, coding):
 
             writer.close()  # write EOS marker and flush
         else:
-            compression = "brotli" if coding == "br" else coding
+            compression = "brotli" if compression == "br" else compression
             with pa.CompressedOutputStream(sink, compression) as compressor:
                 # has the first buffer been yielded already?
                 sent_first = False
@@ -331,7 +438,10 @@ def generate_chunk_buffers(schema, source, coding):
         sink.close_now()
 
 
-AVAILABLE_ENCODINGS = ["zstd", "br", "gzip"]
+AVAILABLE_IPC_CODECS = ["zstd", "lz4"]
+"""List of available codecs Arrow IPC buffer compression."""
+
+AVAILABLE_CODINGS = ["zstd", "br", "gzip"]
 """
 List of available content-codings as used in HTTP.
 
@@ -354,15 +464,20 @@ class MyRequestHandler(BaseHTTPRequestHandler):
     def _resolve_batches(self):
         return pa.RecordBatchReader.from_batches(the_schema, all_batches)
 
-    def _send_not_acceptable(self, accept_encoding, parsing_error=None):
+    def _send_not_acceptable(self, parsing_error=None):
         self.send_response(406, "Not Acceptable")
         self.send_header("Content-Type", "text/plain")
         self.end_headers()
         if parsing_error:
-            message = f"Error parsing `Accept-Encoding` header: {parsing_error}\n"
+            message = f"Error parsing header: {parsing_error}\n"
         else:
             message = "None of the available codings are accepted by this client.\n"
-        message += f"`Accept-Encoding` header was {accept_encoding!r}.\n"
+        accept = self.headers.get("Accept")
+        if accept is not None:
+            message += f"`Accept` header was {accept!r}.\n"
+        accept_encoding = self.headers.get("Accept-Encoding")
+        if accept_encoding is not None:
+            message += f"`Accept-Encoding` header was {accept_encoding!r}.\n"
         self.wfile.write(bytes(message, "utf-8"))
 
     def do_GET(self):
@@ -374,27 +489,26 @@ class MyRequestHandler(BaseHTTPRequestHandler):
             self.protocol_version = "HTTP/1.1"
             chunked = True
 
-        coding = None
-        parsing_error = None
-        accept_encoding = self.headers.get("Accept-Encoding")
-        if accept_encoding is None:
-            # if the Accept-Encoding header is not explicitly set, return the
-            # uncompressed data for HTTP/1.0 requests and compressed data for
-            # HTTP/1.1 requests with the safest compression format choice: "gzip".
-            coding = (
-                "identity"
-                if self.request_version == "HTTP/1.0"
-                or ("gzip" not in AVAILABLE_ENCODINGS)
-                else "gzip"
+        # if client's intent cannot be derived from the headers, return
+        # uncompressed data for HTTP/1.0 requests and compressed data for
+        # HTTP/1.1 requests with the safest compression format choice: "gzip".
+        default_compression = (
+            "identity"
+            if self.request_version == "HTTP/1.0" or ("gzip" not in AVAILABLE_CODINGS)
+            else "gzip"
+        )
+        try:
+            compression = pick_compression(
+                self.headers,
+                AVAILABLE_IPC_CODECS,
+                AVAILABLE_CODINGS,
+                default_compression,
             )
-        else:
-            try:
-                coding = pick_coding(accept_encoding, AVAILABLE_ENCODINGS)
-            except ValueError as e:
-                parsing_error = e
-
-        if coding is None:
-            self._send_not_acceptable(accept_encoding, parsing_error)
+            if compression is None:
+                self._send_not_acceptable()
+                return
+        except ValueError as e:
+            self._send_not_acceptable(str(e))
             return
 
         ### in a real application the data would be resolved from a database or
@@ -411,12 +525,12 @@ class MyRequestHandler(BaseHTTPRequestHandler):
         # suggest a default filename in case this response is saved by the user
         self.send_header("Content-Disposition", r'attachment; filename="output.arrows"')
 
-        if coding != "identity":
-            self.send_header("Content-Encoding", coding)
+        if not compression.startswith("identity"):
+            self.send_header("Content-Encoding", compression)
         if chunked:
             self.send_header("Transfer-Encoding", "chunked")
             self.end_headers()
-            for buffer in generate_chunk_buffers(the_schema, source, coding):
+            for buffer in generate_chunk_buffers(the_schema, source, compression):
                 self.wfile.write(f"{len(buffer):X}\r\n".encode("utf-8"))
                 self.wfile.write(buffer)
                 self.wfile.write("\r\n".encode("utf-8"))
@@ -424,7 +538,7 @@ class MyRequestHandler(BaseHTTPRequestHandler):
         else:
             self.end_headers()
             sink = SocketWriterSink(self.wfile)
-            for buffer in generate_chunk_buffers(the_schema, source, coding):
+            for buffer in generate_chunk_buffers(the_schema, source, compression):
                 sink.write(buffer)
 
 

@@ -19,22 +19,28 @@
 
 CURL="curl --verbose"
 URI="http://localhost:8008"
-OUT=output.arrows
-OUT2=output2.arrows
+OUT_HTTP1=out.arrows
+OUT_CHUNKED=out_from_chunked.arrows
 
 # HTTP/1.0 means that response is not chunked and not compressed...
-$CURL --http1.0 -o $OUT $URI
+$CURL --http1.0 -o $OUT_HTTP1 $URI
 # ...but it may be compressed with an explicitly set Accept-Encoding
 # header
-$CURL --http1.0 -H "Accept-Encoding: gzip, *;q=0" -o $OUT.gz $URI
-$CURL --http1.0 -H "Accept-Encoding: zstd, *;q=0" -o $OUT.zstd $URI
-$CURL --http1.0 -H "Accept-Encoding: br, *;q=0" -o $OUT.brotli $URI
+$CURL --http1.0 -H "Accept-Encoding: gzip, *;q=0" -o $OUT_HTTP1.gz $URI
+$CURL --http1.0 -H "Accept-Encoding: zstd, *;q=0" -o $OUT_HTTP1.zstd $URI
+$CURL --http1.0 -H "Accept-Encoding: br, *;q=0" -o $OUT_HTTP1.br $URI
+# ...or with IPC buffer compression if the Accept header specifies codecs.
+$CURL --http1.0 -H "Accept: application/vnd.apache.arrow.stream; codecs=\"zstd, lz4\"" -o $OUT_HTTP1+zstd $URI
+$CURL --http1.0 -H "Accept: application/vnd.apache.arrow.stream; codecs=lz4" -o $OUT_HTTP1+lz4 $URI
 
 # HTTP/1.1 means compression is on by default...
 # ...but it can be refused with the Accept-Encoding: identity header.
-$CURL -H "Accept-Encoding: identity" -o $OUT2 $URI
+$CURL -H "Accept-Encoding: identity" -o $OUT_CHUNKED $URI
 # ...with gzip if no Accept-Encoding header is set.
-$CURL -o $OUT2.gz $URI
+$CURL -o $OUT_CHUNKED.gz $URI
 # ...or with the compression algorithm specified in the Accept-Encoding.
-$CURL -H "Accept-Encoding: zstd, *;q=0" -o $OUT2.zstd $URI
-$CURL -H "Accept-Encoding: br, *;q=0" -o $OUT2.br $URI
+$CURL -H "Accept-Encoding: zstd, *;q=0" -o $OUT_CHUNKED.zstd $URI
+$CURL -H "Accept-Encoding: br, *;q=0" -o $OUT_CHUNKED.br $URI
+# ...or with IPC buffer compression if the Accept header specifies codecs.
+$CURL -H "Accept: application/vnd.apache.arrow.stream; codecs=\"zstd, lz4\"" -o $OUT_CHUNKED+zstd $URI
+$CURL -H "Accept: application/vnd.apache.arrow.stream; codecs=lz4" -o $OUT_CHUNKED+lz4 $URI
