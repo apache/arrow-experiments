@@ -35,7 +35,7 @@ def make_request(uri, coding):
     )
     response = urllib.request.urlopen(request)
     content_type = response.headers["Content-Type"]
-    if content_type != ARROW_STREAM_FORMAT:
+    if not content_type.startswith(ARROW_STREAM_FORMAT):
         raise ValueError(f"Expected {ARROW_STREAM_FORMAT}, got {content_type}")
     if coding == "identity":
         return response

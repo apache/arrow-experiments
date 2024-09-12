@@ -521,7 +521,14 @@ class MyRequestHandler(BaseHTTPRequestHandler):
         # self.send_header('Access-Control-Allow-Origin', 'http://localhost:8008')
         # self.send_header('Access-Control-Allow-Methods', 'GET')
         # self.send_header('Access-Control-Allow-Headers', 'Content-Type')
-        self.send_header("Content-Type", "application/vnd.apache.arrow.stream")
+        self.send_header(
+            "Content-Type",
+            (
+                f"{ARROW_STREAM_FORMAT}; codec={compression[9:]}"
+                if compression.startswith("identity+")
+                else ARROW_STREAM_FORMAT
+            ),
+        )
         # suggest a default filename in case this response is saved by the user
         self.send_header("Content-Disposition", r'attachment; filename="output.arrows"')
 
