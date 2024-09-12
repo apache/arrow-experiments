@@ -24,10 +24,6 @@ import re
 import socketserver
 import string
 
-# put entire response in a buffer, set the Content-Length header, and
-# send it all at once. If False, stream the response into the socket.
-BUFFER_ENTIRE_RESPONSE = False
-
 # use dictionary encoding for the ticker column
 USE_DICTIONARY_ENCODING = True
 
@@ -225,48 +221,6 @@ class SocketWriterSink(socketserver._SocketWriter):
         pass
 
 
-def stream_all(schema, source, coding, sink):
-    if coding == "identity":
-        # source: RecordBatchReader
-        #   |> writer: RecordBatchStreamWriter
-        #   |> sink: file-like
-        with pa.ipc.new_stream(sink, schema) as writer:
-            for batch in source:
-                writer.write_batch(batch)
-            writer.close()  # write EOS marker and flush
-    else:
-        # IANA nomenclature for Brotli is "br" and not "brotli"
-        compression = "brotli" if coding == "br" else coding
-        with pa.CompressedOutputStream(sink, compression) as compressor:
-            # source: RecordBatchReader
-            #   |> writer: RecordBatchStreamWriter
-            #   |> compressor: CompressedOutputStream
-            #   |> sink: file-like
-            with pa.ipc.new_stream(compressor, schema) as writer:
-                for batch in source:
-                    writer.write_batch(batch)
-                writer.close()  # write EOS marker and flush
-            # ensure buffered data is compressed and written to the sink
-            compressor.close()
-
-
-def generate_response_buffer(schema, source, coding):
-    """
-    Put all the record batches from the source into a single buffer.
-
-    If `coding` is "identity", the source is written to the buffer as is.
-    Otherwise, the source is compressed using the given coding.
-    """
-    # the sink holds the buffer and we give a view of it to the caller
-    with LateClosingBytesIO() as sink:
-        stream_all(schema, source, coding, sink)
-        # zero-copy buffer access using getbuffer() keeping the sink alive
-        # after the yield statement until this function is done executing
-        with sink.getbuffer() as buffer:
-            yield buffer
-        sink.close_now()
-
-
 def generate_chunk_buffers(schema, source, coding):
     # the sink holds the buffer and we give a view of it to the caller
     with LateClosingBytesIO() as sink:
@@ -362,7 +316,7 @@ class MyRequestHandler(BaseHTTPRequestHandler):
             chunked = False
         else:
             self.protocol_version = "HTTP/1.1"
-            chunked = not BUFFER_ENTIRE_RESPONSE
+            chunked = True
 
         coding = None
         parsing_error = None
@@ -411,16 +365,11 @@ class MyRequestHandler(BaseHTTPRequestHandler):
                 self.wfile.write(buffer)
                 self.wfile.write("\r\n".encode("utf-8"))
             self.wfile.write("0\r\n\r\n".encode("utf-8"))
-        elif BUFFER_ENTIRE_RESPONSE:
-            for buffer in generate_response_buffer(the_schema, source, coding):
-                self.send_header("Content-Length", str(len(buffer)))
-                self.end_headers()
-                self.wfile.write(buffer)
-                break
         else:
             self.end_headers()
             sink = SocketWriterSink(self.wfile)
-            stream_all(the_schema, source, coding, sink)
+            for buffer in generate_chunk_buffers(the_schema, source, coding):
+                sink.write(buffer)
 
 
 print("Generating example data...")
