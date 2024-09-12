@@ -23,33 +23,39 @@ URI = "http://localhost:8008"
 ARROW_STREAM_FORMAT = "application/vnd.apache.arrow.stream"
 
 
-def make_request(uri, coding):
+def make_request(uri, compression):
+    coding = "identity" if compression.startswith("identity") else compression
     # urllib.request.urlopen() always sends an HTTP/1.1 request
     # with Accept-Encoding: identity, so we need to setup a request
-    # object to customize the request headers
-    request = urllib.request.Request(
-        uri,
-        headers={
-            "Accept-Encoding": f"{coding}, *;q=0",
-        },
-    )
+    # object with custom headers to request a specific compression
+    headers = {
+        "Accept-Encoding": f"{coding}, *;q=0",
+    }
+    if compression.startswith("identity+"):
+        # request IPC buffer compression instead of HTTP compression
+        ipc_codec = compression.split("+")[1]
+        headers["Accept"] = f'{ARROW_STREAM_FORMAT};codec="{ipc_codec}"'
+    request = urllib.request.Request(uri, headers=headers)
+
     response = urllib.request.urlopen(request)
     content_type = response.headers["Content-Type"]
     if not content_type.startswith(ARROW_STREAM_FORMAT):
         raise ValueError(f"Expected {ARROW_STREAM_FORMAT}, got {content_type}")
-    if coding == "identity":
+    if compression.startswith("identity"):
         return response
     # IANA nomenclature for Brotli is "br" and not "brotli"
-    compression = "brotli" if coding == "br" else coding
+    compression = "brotli" if compression == "br" else compression
     return pa.CompressedInputStream(response, compression)
 
 
-def request_and_process(uri, coding):
+def request_and_process(uri, compression):
     batches = []
-    log_prefix = f"{'[' + coding + ']':>10}:"
-    print(f"{log_prefix} Requesting data from {uri} with `{coding}` encoding.")
+    log_prefix = f"{'[' + compression + ']':>10}:"
+    print(
+        f"{log_prefix} Requesting data from {uri} with `{compression}` compression strategy."
+    )
     start_time = time.time()
-    response = make_request(uri, coding)
+    response = make_request(uri, compression)
     with pa.ipc.open_stream(response) as reader:
         schema = reader.schema
         time_to_schema = time.time() - start_time
@@ -80,7 +86,11 @@ def request_and_process(uri, coding):
     return batches
 
 
+# HTTP compression
 request_and_process(URI, "identity")
 request_and_process(URI, "zstd")
 request_and_process(URI, "br")
 request_and_process(URI, "gzip")
+# using IPC buffer compression instead of HTTP compression
+request_and_process(URI, "identity+zstd")
+request_and_process(URI, "identity+lz4")
