@@ -32,3 +32,14 @@ pip install "uvicorn[standard]"
 pip install pyarrow
 uvicorn server:app --port 8008
 ```
+
+> [!NOTE]
+> This example requires Starlette 0.38.0 or newer, which added support for `memoryview` in `StreamingResponse`. If using an older version of Starlette, change both instances of:
+> ```py
+> with sink.getbuffer() as buffer:
+>     yield buffer
+> ```
+> to:
+> ```py
+> yield sink.getvalue()
+> ```

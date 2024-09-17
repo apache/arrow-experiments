@@ -65,12 +65,14 @@ def generate_bytes(schema, batches):
             sink.seek(0)
             writer.write_batch(batch)
             sink.truncate()
-            yield sink.getvalue()
+            with sink.getbuffer() as buffer:
+                yield buffer
 
         sink.seek(0)
         writer.close()
         sink.truncate()
-        yield sink.getvalue()
+        with sink.getbuffer() as buffer:
+            yield buffer
 
 
 batches = GetPutData()
