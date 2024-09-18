@@ -189,7 +189,7 @@ public class ArrowHttpServer {
      *         accepted. If the client does not specify the codecs parameter, then
      *         defaultCodec is returned.
      */
-    static Optional<CodecType> pickIpcCodec(
+    static public Optional<CodecType> pickIpcCodec(
         Request request, List<CodecType> available, Optional<CodecType> defaultCodec) {
       var accept = request.getHttpFields().getField(HttpHeader.ACCEPT);
 
@@ -255,7 +255,7 @@ public class ArrowHttpServer {
      *         "identity" (uncompressed) either. In this case, a "406 Not
      *         Acceptable" response should be sent.
      */
-    static String pickCoding(Request request, List<String> available) {
+    public static String pickCoding(Request request, List<String> available) {
       if (!available.contains("identity")) {
         available = new ArrayList<>(available);
         available.add("identity");
@@ -282,7 +282,7 @@ public class ArrowHttpServer {
       /**
        * No compression at all.
        */
-      CompressionStrategy() {
+      public CompressionStrategy() {
         ipcCodec = NoCompressionCodec.INSTANCE;
         httpCoding = "identity";
       }
@@ -290,7 +290,7 @@ public class ArrowHttpServer {
       /**
        * IPC buffer compression without HTTP compression.
        */
-      CompressionStrategy(CodecType codecType) {
+      public CompressionStrategy(CodecType codecType) {
         this.ipcCodec = CommonsCompressionFactory.INSTANCE.createCodec(codecType);
         this.httpCoding = "identity";
       }
@@ -298,7 +298,7 @@ public class ArrowHttpServer {
       /**
        * HTTP compression without IPC buffer compression.
        */
-      CompressionStrategy(String coding) {
+      public CompressionStrategy(String coding) {
         this.ipcCodec = NoCompressionCodec.INSTANCE;
         this.httpCoding = coding;
       }
@@ -306,7 +306,7 @@ public class ArrowHttpServer {
       /**
        * IPC buffer compression codec name to be used in HTTP headers.
        */
-      Optional<String> ipcCodecName() {
+      public Optional<String> ipcCodecName() {
         switch (ipcCodec.getCodecType()) {
           case ZSTD:
             return Optional.of("zstd");
@@ -317,6 +317,11 @@ public class ArrowHttpServer {
           default:
             throw new AssertionError("Unexpected codec type: " + ipcCodec.getCodecType());
         }
+      }
+
+      @Override
+      public String toString() {
+        return ipcCodecName().map(name -> "identity+" + name).orElse(httpCoding);
       }
     }
 
@@ -402,7 +407,7 @@ public class ArrowHttpServer {
         baseRequest.setHandled(true);
         return;
       }
-      System.out.println("Compression strategy: " + compression);
+      System.out.printf("Compression strategy: %s\n", compression);
 
       // In a real application the data would be resolved from a database or
       // another source like a file and error handling would be done here
