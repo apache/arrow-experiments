@@ -276,8 +276,8 @@ public class ArrowHttpServer {
     }
 
     static class CompressionStrategy {
-      public CompressionCodec ipcCodec;
-      public String httpCoding;
+      final public CompressionCodec ipcCodec;
+      final public String httpCoding;
 
       /**
        * No compression at all.
