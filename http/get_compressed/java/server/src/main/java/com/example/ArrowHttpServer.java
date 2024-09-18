@@ -312,6 +312,8 @@ public class ArrowHttpServer {
             return Optional.of("zstd");
           case LZ4_FRAME:
             return Optional.of("lz4");
+          case NO_COMPRESSION:
+            return Optional.empty();
           default:
             throw new AssertionError("Unexpected codec type: " + ipcCodec.getCodecType());
         }
