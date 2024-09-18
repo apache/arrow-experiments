@@ -19,3 +19,10 @@ vendored
 build
 .vscode
 cufile.log
+
+# Java
+.classpath
+.mvn
+.project
+.settings
+target
