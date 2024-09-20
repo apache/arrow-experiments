@@ -34,7 +34,7 @@ def make_request(uri, compression):
     if compression.startswith("identity+"):
         # request IPC buffer compression instead of HTTP compression
         ipc_codec = compression.split("+")[1]
-        headers["Accept"] = f'{ARROW_STREAM_FORMAT};codec="{ipc_codec}"'
+        headers["Accept"] = f'{ARROW_STREAM_FORMAT};codecs="{ipc_codec}"'
     request = urllib.request.Request(uri, headers=headers)
 
     response = urllib.request.urlopen(request)

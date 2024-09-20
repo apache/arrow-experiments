@@ -82,6 +82,21 @@ If a server adopts this approach and a client does not specify any codecs in
 the `Accept` header, the server can fall back to checking `Accept-Encoding`
 header to pick a compression algorithm for the entire HTTP response stream.
 
+To make debugging easier servers may include the chosen compression codec(s)
+in the `Content-Type` header of the response (quotes are optional):
+
+    Content-Type: application/vnd.apache.arrow.ipc; codecs=zstd
+
+This is not necessary for correct decompression because the payload already
+contains information that tells the IPC reader how to decompress the buffers,
+but it can help developers understand what is going on.
+
+When programatically checking if the `Content-Type` header contains a specific
+format, it is important to use a parser that can handle parameters or look
+only at the media type part of the header. This is not an exclusivity of the
+Arrow IPC format, but a general rule for all media types. For example,
+`application/json; charset=utf-8` should be match `application/json`.
+
 ## HTTP/1.1 Response Compression
 
 HTTP/1.1 offers an elaborate way for clients to specify their preferred

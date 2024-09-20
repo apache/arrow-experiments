@@ -524,7 +524,7 @@ class MyRequestHandler(BaseHTTPRequestHandler):
         self.send_header(
             "Content-Type",
             (
-                f"{ARROW_STREAM_FORMAT}; codec={compression[9:]}"
+                f"{ARROW_STREAM_FORMAT}; codecs={compression[9:]}"
                 if compression.startswith("identity+")
                 else ARROW_STREAM_FORMAT
             ),
