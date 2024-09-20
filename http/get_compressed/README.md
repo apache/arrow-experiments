@@ -30,11 +30,12 @@ there are at least two approaches to this problem:
 2. Uncompressed HTTP responses carrying Arrow IPC streams with compressed
    array buffers.
 
-Applying IPC buffer and HTTP compression at the same is not recommended. The
-extra CPU overhead of decompressing the data twice is not worth any possible
-gains that double compression might bring. If compression ratios are
-unambiguously more important than reducing CPU overhead, then a different
-compression algorithm that optimizes for that can be chosen.
+Applying both IPC buffer and HTTP compression to the same data is not
+recommended. The extra CPU overhead of decompressing the data twice is
+not worth any possible gains that double compression might bring. If
+compression ratios are unambiguously more important than reducing CPU
+overhead, then a different compression algorithm that optimizes for that can
+be chosen.
 
 This table shows the support for different compression algorithms in HTTP and
 Arrow IPC:
