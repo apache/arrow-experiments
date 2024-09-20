@@ -70,7 +70,7 @@ data.
 
     Accept: application/vnd.apache.arrow.ipc; codecs="zstd, lz4"
 
-There is similar to clients requesting video streams by specifying the
+This is similar to clients requesting video streams by specifying the
 container format and the codecs they support
 (e.g. `Accept: video/webm; codecs="vp8, vorbis"`).
 
