@@ -95,7 +95,7 @@ When programatically checking if the `Content-Type` header contains a specific
 format, it is important to use a parser that can handle parameters or look
 only at the media type part of the header. This is not an exclusivity of the
 Arrow IPC format, but a general rule for all media types. For example,
-`application/json; charset=utf-8` should be match `application/json`.
+`application/json; charset=utf-8` should match `application/json`.
 
 ## HTTP/1.1 Response Compression
 
