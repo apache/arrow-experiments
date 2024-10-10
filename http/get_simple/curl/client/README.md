@@ -36,7 +36,7 @@ To read the resulting file `output.arrows` and retrieve the schema and record ba
   ```py
   import pyarrow as pa
 
-  with open("output.arrows") as f:
+  with open("output.arrows", "rb") as f:
       reader = pa.ipc.open_stream(f)
       
       schema = reader.schema
