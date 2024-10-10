@@ -37,15 +37,15 @@ To read the resulting file `output.arrows` and retrieve the schema and record ba
   import pyarrow as pa
 
   with open("output.arrows", "rb") as f:
-      reader = pa.ipc.open_stream(pa.BufferReader(f.read()))
-
-  schema = reader.schema
-
-  batch = reader.read_next_batch()
-  # ...
-
-  # or alternatively:
-  batches = [b for b in reader]
+      reader = pa.ipc.open_stream(f)
+      
+      schema = reader.schema
+      
+      batch = reader.read_next_batch()
+      # ...
+      
+      # or alternatively:
+      batches = [b for b in reader]
   ```
 </details>
 
