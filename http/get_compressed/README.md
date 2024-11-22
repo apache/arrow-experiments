@@ -19,7 +19,9 @@
 
 # HTTP GET Arrow Data: Compression Examples
 
-This directory contains examples of HTTP servers/clients that transmit/receive data in the Arrow IPC streaming format and use compression (in various ways) to reduce the size of the transmitted data.
+This directory contains examples of HTTP servers/clients that transmit/receive
+data in the Arrow IPC streaming format and use compression (in various ways) to
+reduce the size of the transmitted data.
 
 Since we re-use the [Arrow IPC format][ipc] for transferring Arrow data over
 HTTP and both Arrow IPC and HTTP standards support compression on their own,
@@ -97,7 +99,9 @@ only at the media type part of the header. This is not an exclusivity of the
 Arrow IPC format, but a general rule for all media types. For example,
 `application/json; charset=utf-8` should match `application/json`.
 
-When considering use of IPC buffer compression, check the [IPC format section of the Arrow Implementation Status page][^5] to see whether the the Arrow implementations you are targeting support it.
+When considering use of IPC buffer compression, check the [IPC format section of
+the Arrow Implementation Status page][^5] to see whether the the Arrow
+implementations you are targeting support it.
 
 ## HTTP/1.1 Response Compression
 
@@ -105,11 +109,11 @@ HTTP/1.1 offers an elaborate way for clients to specify their preferred
 content encoding (read compression algorithm) using the `Accept-Encoding`
 header.[^1]
 
-At least the Python server (in [`python/`](./python)) implements a fully compliant
-parser for the `Accept-Encoding` header. Application servers may choose
-to implement a simpler check of the `Accept-Encoding` header or assume
-that the client accepts the chosen compression scheme when talking
-to that server.
+At least the Python server (in [`python/`](./python)) implements a fully
+compliant parser for the `Accept-Encoding` header. Application servers may
+choose to implement a simpler check of the `Accept-Encoding` header or assume
+that the client accepts the chosen compression scheme when talking to that
+server.
 
 Here is an example of a header that a client may send and what it means:
 
@@ -161,16 +165,15 @@ must include a `Content-Encoding` header in the response.
     response MUST include a Content-Encoding entity-header (section
     14.11) that lists the non-identity content-coding(s) used.
 
-Since not all servers implement the full `Accept-Encoding` header parsing
-logic, clients tend to stick to simple header values like
-`Accept-Encoding: identity` when no compression is desired, and
-`Accept-Encoding: gzip, deflate, zstd, br` when the client supports different
-compression formats and is indifferent to which one the server chooses. Clients
-should expect uncompressed responses as well in theses cases. The only way to
-force a "406 Not Acceptable" response when no compression is available is to
-send `identity;q=0` or `*;q=0` somewhere in the end of the `Accept-Encoding`
-header. But that relies on the server implementing the full `Accept-Encoding`
-handling logic.
+Since not all servers implement the full `Accept-Encoding` header parsing logic,
+clients tend to stick to simple header values like `Accept-Encoding: identity`
+when no compression is desired, and `Accept-Encoding: gzip, deflate, zstd, br`
+when the client supports different compression formats and is indifferent to
+which one the server chooses. Clients should expect uncompressed responses as
+well in theses cases. The only way to force a "406 Not Acceptable" response when
+no compression is available is to send `identity;q=0` or `*;q=0` somewhere in
+the end of the `Accept-Encoding` header. But that relies on the server
+implementing the full `Accept-Encoding` handling logic.
 
 
 [^1]: [Fielding, R. et al. (1999). HTTP/1.1. RFC 2616, Section 14.3 Accept-Encoding.](https://www.rfc-editor.org/rfc/rfc2616#section-14.3)
