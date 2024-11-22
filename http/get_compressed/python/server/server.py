@@ -192,7 +192,7 @@ def pick_ipc_codec(accept_header, available, default):
     This is how a client may specify the IPC buffer compression codecs it
     accepts:
 
-        Accept: application/vnd.apache.arrow.ipc; codecs="zstd, lz4"
+        Accept: application/vnd.apache.arrow.stream; codecs="zstd, lz4"
 
     Parameters
     ----------

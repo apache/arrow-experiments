@@ -40,13 +40,13 @@ be chosen.
 This table shows the support for different compression algorithms in HTTP and
 Arrow IPC:
 
-| Format             | HTTP Support    | IPC Support     |
-| ------------------ | --------------- | --------------- |
-| gzip (GZip)        | X               |                 |
-| deflate (DEFLATE)  | X               |                 |
-| br (Brotli)        | X[^2]           |                 |
-| zstd (Zstandard)   | X[^2]           | X               |
-| lz4 (LZ4)          |                 | X               |
+| Codec      | Identifier  | HTTP Support  | IPC Support  |
+|----------- | ----------- | ------------- | ------------ |
+| GZip       | `gzip`      | X             |              |
+| DEFLATE    | `deflate`   | X             |              |
+| Brotli     | `br`        | X[^2]         |              |
+| Zstandard  | `zstd`      | X[^2]         | X[^3]        |
+| LZ4        | `lz4`       |               | X[^3]        |
 
 Since not all Arrow IPC implementations support compression, HTTP compression
 based on accepted formats negotiated with the client is a great way to increase
@@ -61,14 +61,14 @@ in the server environment.
 ## Arrow IPC Compression
 
 When IPC buffer compression is preferred and servers can't assume all clients
-support it[^3], clients may be asked to explicitly list the supported compression
+support it[^4], clients may be asked to explicitly list the supported compression
 algorithms in the request headers. The `Accept` header can be used for this
 since `Accept-Encoding` (and `Content-Encoding`) is used to control compression
 of the entire HTTP response stream and instruct HTTP clients (like browsers) to
 decompress the response before giving data to the application or saving the
 data.
 
-    Accept: application/vnd.apache.arrow.ipc; codecs="zstd, lz4"
+    Accept: application/vnd.apache.arrow.stream; codecs="zstd, lz4"
 
 This is similar to clients requesting video streams by specifying the
 container format and the codecs they support
@@ -85,7 +85,7 @@ header to pick a compression algorithm for the entire HTTP response stream.
 To make debugging easier servers may include the chosen compression codec(s)
 in the `Content-Type` header of the response (quotes are optional):
 
-    Content-Type: application/vnd.apache.arrow.ipc; codecs=zstd
+    Content-Type: application/vnd.apache.arrow.stream; codecs=zstd
 
 This is not necessary for correct decompression because the payload already
 contains information that tells the IPC reader how to decompress the buffers,
@@ -97,13 +97,15 @@ only at the media type part of the header. This is not an exclusivity of the
 Arrow IPC format, but a general rule for all media types. For example,
 `application/json; charset=utf-8` should match `application/json`.
 
+When considering use of IPC buffer compression, check the [IPC format section of the Arrow Implementation Status page][^5] to see whether the the Arrow implementations you are targeting support it.
+
 ## HTTP/1.1 Response Compression
 
 HTTP/1.1 offers an elaborate way for clients to specify their preferred
 content encoding (read compression algorithm) using the `Accept-Encoding`
 header.[^1]
 
-At least the Python server (in `python/`)  implements a fully compliant
+At least the Python server (in [`python/`](./python)) implements a fully compliant
 parser for the `Accept-Encoding` header. Application servers may choose
 to implement a simpler check of the `Accept-Encoding` header or assume
 that the client accepts the chosen compression scheme when talking
@@ -111,7 +113,7 @@ to that server.
 
 Here is an example of a header that a client may send and what it means:
 
-   Accept-Encoding: zstd;q=1.0, gzip;q=0.5, br;q=0.8, identity;q=0
+    Accept-Encoding: zstd;q=1.0, gzip;q=0.5, br;q=0.8, identity;q=0
 
 This header says that the client prefers that the server compress the
 response with `zstd`, but if that is not possible, then `brotli` and `gzip`
@@ -122,7 +124,7 @@ does not want the response to be uncompressed. This is communicated by
 To tell the server the client only accepts `zstd` responses and nothing
 else, not even uncompressed responses, the client would send:
 
-   Accept-Encoding: zstd, *;q=0
+    Accept-Encoding: zstd, *;q=0
 
 RFC 2616[^1] specifies the rules for how a server should interpret the
 `Accept-Encoding` header:
@@ -173,7 +175,9 @@ handling logic.
 
 [^1]: [Fielding, R. et al. (1999). HTTP/1.1. RFC 2616, Section 14.3 Accept-Encoding.](https://www.rfc-editor.org/rfc/rfc2616#section-14.3)
 [^2]: [MDN Web Docs: Accept-Encoding](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Encoding#browser_compatibility)
-[^3]: Web applications using the JavaScript Arrow implementation don't have
+[^3]: [Arrow Columnar Format: Compression](https://arrow.apache.org/docs/format/Columnar.html#compression)
+[^4]: Web applications using the JavaScript Arrow implementation don't have
     access to the compression APIs to decompress `zstd` and `lz4` IPC buffers.
+[^5]: [Arrow Implementation Status: IPC Format](https://arrow.apache.org/docs/status.html#ipc-format)
 
 [ipc]: https://arrow.apache.org/docs/format/Columnar.html#serialization-and-interprocess-communication-ipc
