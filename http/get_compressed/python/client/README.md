@@ -19,9 +19,8 @@
 
 # HTTP GET Arrow Data: Compressed Arrow Data Examples
 
-This directory contains an example of an HTTP client implemented in Python using
-the Compressed Arrow HTTP Server example from the parent directory. The client
-makes multiple requests with different headers to negotiate the compression
-algorithm used to transfer Arrow IPC streams.
+This directory contains an HTTP client implemented in Python that issues multiple 
+requests to one of the server examples implemented in the parent directory,
+negotiating different compression algorithms for the Arrow IPC stream data.
 
     python client.py
