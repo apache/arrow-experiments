@@ -24,4 +24,9 @@ This directory contains an example of an HTTP server implemented in Python
 able to serve Arrow IPC streams compressed with different algorithms negotiated
 with the client via different standard HTTP headers.
 
-    python server.py
+To run this example:
+
+```sh
+pip install pyarrow
+python server.py
+```
