@@ -23,4 +23,10 @@ This directory contains an HTTP client implemented in Python that issues multipl
 requests to one of the server examples implemented in the parent directory,
 negotiating different compression algorithms for the Arrow IPC stream data.
 
-    python client.py
+To run this example, first start one of the compressed server examples in the
+parent directory, then:
+
+```sh
+pip install pyarrow
+python client.py
+```
