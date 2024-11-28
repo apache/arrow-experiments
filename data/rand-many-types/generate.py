@@ -17,55 +17,60 @@
 
 import pyarrow as pa
 import numpy as np
-import random
 import string
 from decimal import Decimal
 from datetime import datetime, timedelta
 
 
-def generate_random_data(data_type, num_rows):
+def generate_random_data(data_type, num_rows, random_generator):
+    rng = random_generator
     if pa.types.is_int8(data_type):
-        return pa.array(np.random.randint(-128, 127, num_rows, dtype=np.int8))
+        return pa.array(rng.integers(-128, 127, num_rows, dtype=np.int8))
     elif pa.types.is_int16(data_type):
-        return pa.array(np.random.randint(-32768, 32767, num_rows, dtype=np.int16))
+        return pa.array(rng.integers(-32768, 32767, num_rows, dtype=np.int16))
     elif pa.types.is_int32(data_type):
         return pa.array(
-            np.random.randint(-2147483648, 2147483647, num_rows, dtype=np.int32)
+            rng.integers(-2147483648, 2147483647, num_rows, dtype=np.int32)
         )
     elif pa.types.is_int64(data_type):
         return pa.array(
-            np.random.randint(
-                -9223372036854775808, 9223372036854775807, num_rows, dtype=np.int64
+            rng.integers(
+                -9223372036854775808,
+                9223372036854775807,
+                num_rows,
+                dtype=np.int64,
             )
         )
     elif pa.types.is_uint8(data_type):
-        return pa.array(np.random.randint(0, 255, num_rows, dtype=np.uint8))
+        return pa.array(rng.integers(0, 255, num_rows, dtype=np.uint8))
     elif pa.types.is_uint16(data_type):
-        return pa.array(np.random.randint(0, 65535, num_rows, dtype=np.uint16))
+        return pa.array(rng.integers(0, 65535, num_rows, dtype=np.uint16))
     elif pa.types.is_uint32(data_type):
-        return pa.array(np.random.randint(0, 4294967295, num_rows, dtype=np.uint32))
+        return pa.array(rng.integers(0, 4294967295, num_rows, dtype=np.uint32))
     elif pa.types.is_uint64(data_type):
         return pa.array(
-            np.random.randint(0, 18446744073709551615, num_rows, dtype=np.uint64)
+            rng.integers(0, 18446744073709551615, num_rows, dtype=np.uint64)
         )
     elif pa.types.is_float32(data_type):
-        return pa.array(np.random.rand(num_rows).astype(np.float32))
+        return pa.array(rng.random(num_rows, np.float32))
     elif pa.types.is_float64(data_type):
-        return pa.array(np.random.rand(num_rows).astype(np.float64))
+        return pa.array(rng.random(num_rows, np.float64))
     elif pa.types.is_string(data_type):
-        charset = string.ascii_lowercase + string.ascii_uppercase + string.digits
+        charset = list(
+            string.ascii_lowercase + string.ascii_uppercase + string.digits
+        )
         return pa.array(
-            ["".join(random.choices(charset, k=8)) for _ in range(num_rows)]
+            ["".join(rng.choice(charset, 8)) for _ in range(num_rows)]
         )
     elif pa.types.is_binary(data_type):
-        return pa.array([random.randbytes(8) for _ in range(num_rows)])
+        return pa.array([rng.bytes(8) for _ in range(num_rows)])
     elif pa.types.is_boolean(data_type):
-        return pa.array(np.random.choice([True, False], num_rows))
+        return pa.array(rng.choice([True, False], num_rows))
     elif pa.types.is_date32(data_type):
         base_date = datetime(1970, 1, 1)
         return pa.array(
             [
-                (base_date + timedelta(days=random.randint(0, 10000))).date()
+                (base_date + timedelta(days=int(rng.integers(0, 10000)))).date()
                 for _ in range(num_rows)
             ],
             type=pa.date32(),
@@ -77,7 +82,9 @@ def generate_random_data(data_type, num_rows):
                 (
                     base_date
                     + timedelta(
-                        milliseconds=random.randint(0, 10000 * 24 * 60 * 60 * 1000)
+                        milliseconds=int(
+                            rng.integers(0, 10000 * 24 * 60 * 60 * 1000)
+                        )
                     )
                 ).date()
                 for _ in range(num_rows)
@@ -85,9 +92,10 @@ def generate_random_data(data_type, num_rows):
             type=pa.date64(),
         )
     elif pa.types.is_timestamp(data_type):
+        base_time = datetime(2016, 1, 1, 0, 0, 0, 0)
         return pa.array(
             [
-                datetime.utcnow() + timedelta(seconds=random.randint(0, 10000))
+                base_time + timedelta(seconds=int(rng.integers(0, 10000)))
                 for _ in range(num_rows)
             ],
             type=pa.timestamp("ns"),
@@ -96,7 +104,7 @@ def generate_random_data(data_type, num_rows):
         return pa.array(
             [
                 Decimal(
-                    f"{random.randint(10**7, 10**8-1)}.{random.randint(0, 10**2-1)}"
+                    f"{rng.integers(10**7, 10**8-1)}.{rng.integers(0, 10**2-1)}"
                 )
                 for _ in range(num_rows)
             ],
@@ -104,14 +112,16 @@ def generate_random_data(data_type, num_rows):
         )
     elif pa.types.is_list(data_type):
         return pa.array(
-            [[random.randint(0, 100) for _ in range(3)] for _ in range(num_rows)],
+            [[rng.integers(0, 100) for _ in range(3)] for _ in range(num_rows)],
             type=pa.list_(pa.int32()),
         )
     elif pa.types.is_struct(data_type):
-        struct_type = pa.struct([("field1", pa.int32()), ("field2", pa.float64())])
+        struct_type = pa.struct(
+            [("field1", pa.int32()), ("field2", pa.float64())]
+        )
         return pa.array(
             [
-                {"field1": random.randint(0, 100), "field2": random.random()}
+                {"field1": rng.integers(0, 100), "field2": rng.random()}
                 for _ in range(num_rows)
             ],
             type=struct_type,
@@ -149,17 +159,24 @@ data_types = [
     pa.null(),
 ]
 
-schema = pa.schema([(f"col_{j}", data_type) for j, data_type in enumerate(data_types)])
+schema = pa.schema(
+    [(f"col_{j}", data_type) for j, data_type in enumerate(data_types)]
+)
 
 num_rows_per_batch = 1000
 num_batches = 100
+
+random_seed = 12345
+random_generator = np.random.default_rng(random_seed)
 
 path = "random.arrows"
 
 with pa.ipc.new_stream(path, schema) as writer:
     for i in range(0, num_batches):
         columns = {
-            f"col_{j}": generate_random_data(data_type, num_rows_per_batch)
+            f"col_{j}": generate_random_data(
+                data_type, num_rows_per_batch, random_generator
+            )
             for j, data_type in enumerate(data_types)
         }
         writer.write_batch(pa.RecordBatch.from_pydict(columns))
