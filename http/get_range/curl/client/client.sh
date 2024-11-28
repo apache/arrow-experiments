@@ -24,15 +24,15 @@
 curl -I localhost:8008/random.arrows
 # Content-Length: 13550776
 
-# Download the first half of the file to `random-part-1.arrows`
-curl -r 0-6775388 localhost:8008/random.arrows -o random-part-1.arrows
+# Download the first half of the file to `random-1.arrows.part`
+curl -r 0-6775388 localhost:8008/random.arrows -o random-1.arrows.part
 
-# Download the second half of the file to `random-part-2.arrows`
-curl -r 6775389-13550776 localhost:8008/random.arrows -o random-part-2.arrows
+# Download the second half of the file to `random--2.arrows.part`
+curl -r 6775389-13550776 localhost:8008/random.arrows -o random-2.arrows.part
 
 # Combine the two separate files into one file `random.arrows` then delete them
-cat random-part-1.arrows random-part-2.arrows > random.arrows
-rm random-part-1.arrows random-part-2.arrows
+cat random-1.arrows.part random-2.arrows.part > random.arrows
+rm random-1.arrows.part random-2.arrows.part
 
 # Clean up
 rm random.arrows
