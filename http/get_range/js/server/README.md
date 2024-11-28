@@ -17,6 +17,18 @@
   under the License.
 -->
 
-# HTTP GET Arrow Data: Range Request Examples
+# HTTP GET Arrow Data: Range Request JavaScript Server Example
 
-This directory contains examples of HTTP servers/clients that send/receive data of known size (`Content-Length`) in the Arrow IPC streaming format and support range requests (`Accept-Ranges: bytes`).
+The example in this directory shows how to use the Node.js package [`serve`](https://www.npmjs.com/package/serve) (which supports range requests) to serve a static Arrow IPC stream file over HTTP.
+
+To run this example, copy the file `random.arrows` from the directory `data/rand-many-types/` in this repository into this directory:
+
+```sh
+cp ../../../../data/rand-many-types/random.arrows .
+```
+
+Then start the HTTP server to serve this file:
+
+```sh
+npx --yes serve -l 8008
+```
