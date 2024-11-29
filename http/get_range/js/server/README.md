@@ -21,7 +21,7 @@
 
 The example in this directory shows how to use the Node.js package [`serve`](https://www.npmjs.com/package/serve) (which supports range requests) to serve a static Arrow IPC stream file over HTTP.
 
-To run this example, copy the file `random.arrows` from the directory `data/rand-many-types/` in this repository into this directory:
+To run this example, copy the file `random.arrows` from the directory `data/rand-many-types/` into the current directory:
 
 ```sh
 cp ../../../../data/rand-many-types/random.arrows .
@@ -32,3 +32,6 @@ Then start the HTTP server to serve this file:
 ```sh
 npx --yes serve -l 8008
 ```
+
+> [!NOTE]  
+> The npm package `serve` _should_ automatically set the `Content-Type` header to `application/vnd.apache.arrow.stream` when serving a file with extension `.arrows`, because [the Arrow IPC stream format is officially registered with IANA](https://www.iana.org/assignments/media-types/application/vnd.apache.arrow.stream). Most web servers including `serve` use registration data from IANA to determine the media type of a file based on its file extension and set the `Content-Type` header to that media type when serving a file with that extension. However, this is not working with `.arrows` files in the `serve` package, seemingly because of a problem with the npm package [`mimedb`](https://github.com/jshttp/mime-db) which `serve` depends on.
