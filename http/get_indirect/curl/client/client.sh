@@ -24,5 +24,5 @@ uris=$(curl -s -S http://localhost:8008/ | jq -r '.arrow_stream_files[].uri')
 
 # Use curl to download the files from the URIs in parallel
 if [ -n "$uris" ]; then
-	curl --parallel --remote-name-all $(print $uris)
+    curl --parallel --remote-name-all $(print $uris)
 fi
