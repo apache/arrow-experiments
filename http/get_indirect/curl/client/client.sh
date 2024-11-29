@@ -20,7 +20,8 @@
 
 # use curl to get a JSON listing of filenames, then use jq to
 # extract the filenames from the JSON and construct full URIs
-uris=$(curl -s -S http://localhost:8008 | jq -r '.arrow_stream_files[].filename | "http://localhost:8008/" + .')
+host=http://localhost:8008/
+uris=$(curl -s -S $host | jq -r --arg host "$host" '.arrow_stream_files[].filename | $host + .')
 
 # use curl to download the files from the URIs in parallel
 curl --parallel --remote-name-all $(print $uris)
