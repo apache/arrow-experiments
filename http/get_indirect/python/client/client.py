@@ -28,23 +28,43 @@ ARROW_STREAM_FORMAT = "application/vnd.apache.arrow.stream"
 
 json_response = requests.get(HOST)
 
-if json_response.status_code == 200 and JSON_FORMAT in json_response.headers.get('Content-Type', ''):
-    parsed_data = json_response.json()
-    filenames = [file['filename'] for file in parsed_data['arrow_stream_files']]
-    uris = [HOST + filename for filename in filenames]
-    print("Downloaded and parsed JSON file listing. Found " + str(len(filenames)) + " files.")
-else:
-    raise ValueError("Unexpected Content-Type")
+response_status = json_response.status_code
+if not response_status == 200:
+    raise ValueError(f"Expected response status 200, got {response_status}")
+
+content_type = json_response.headers.get("Content-Type", "")
+if not content_type.startswith(JSON_FORMAT):
+    raise ValueError(f"Expected content type {JSON_FORMAT}, got {content_type}")
+
+print("Downloaded JSON file listing.")
+
+parsed_data = json_response.json()
+uris = [file["uri"] for file in parsed_data["arrow_stream_files"]]
+
+if not all(uri.endswith(".arrows") for uri in uris):
+    raise ValueError(f"Some listed files do not have extension '.arrows'")
+
+print(f"Parsed JSON and found {len(uris)} Arrow stream files.")
 
 tables = {}
 
 for uri in uris:
     arrow_response = requests.get(uri)
-    if arrow_response.status_code == 200 and ARROW_STREAM_FORMAT in arrow_response.headers.get('Content-Type', ''):
-        filename = os.path.basename(uri)
-        tablename = os.path.splitext(filename)[0]
-        with pa.ipc.open_stream(arrow_response.content) as reader:
-            tables[tablename] = reader.read_all()
-        print("Downloaded file " + filename + ".")
-    else:
-        raise ValueError("Unexpected Content-Type")
+
+    response_status = arrow_response.status_code
+    if not response_status == 200:
+        raise ValueError(f"Expected response status 200, got {response_status}")
+
+    content_type = arrow_response.headers.get("Content-Type", "")
+    if not content_type.startswith(ARROW_STREAM_FORMAT):
+        raise ValueError(f"Expected content type {ARROW_STREAM_FORMAT}, got {content_type}")
+    
+    filename = os.path.basename(uri)
+
+    print(f"Downloaded file '{filename}'.")
+
+    tablename = os.path.splitext(filename)[0]
+    with pa.ipc.open_stream(arrow_response.content) as reader:
+        tables[tablename] = reader.read_all()
+
+    print(f"Loaded into in-memory Arrow table '{tablename}'.")

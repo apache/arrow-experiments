@@ -20,5 +20,5 @@
 # HTTP GET Arrow Data: Indirect Examples
 
 This directory contains examples of HTTP clients and servers that use a two-step sequence to retrieve Arrow data:
-1. The client sends a GET request to a server and receives a JSON response from the server containing one or more server URIs (or relative paths or filenames that can be used to create URIs).
+1. The client sends a GET request to a server and receives a JSON response from the server containing one or more server URIs.
 2. The client sends GET requests to each of those URIs and receives a response from each server containing an Arrow IPC stream of record batches (exactly as in the [simple GET examples](https://github.com/apache/arrow-experiments/tree/main/http/get_simple)).

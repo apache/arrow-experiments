@@ -21,7 +21,7 @@
 
 This directory contains an example of an HTTP server implemented in Python using the built-in [`http.server`](https://docs.python.org/3/library/http.server.html) module. The server:
 1. Listens for HTTP GET requests from clients.
-2. Upon receiving a GET request for the document root, serve a JSON document that lists the filenames of all the `.arrows` files in the current directory.
+2. Upon receiving a GET request for the document root, serve a JSON document that lists the URIs of all the `.arrows` files in the current directory.
 3. Upon receiving a GET request for a specific `.arrows` file, serve that file.
 
 To run this example, first copy two `.arrows` files from the `data` section of this repository into the current directory:
@@ -35,4 +35,19 @@ Then start the HTTP server:
 
 ```sh
 python server.py
+```
+
+In this example, the JSON document listing the URIs of the `.arrows` files is structured as shown below. **This JSON structure is provided for example purposes only.** Developers should use different JSON structures in their applications.
+
+```json
+{
+    "arrow_stream_files": [
+        {
+            "uri": "http://127.0.0.1:8008/random.arrows"
+        },
+        {
+            "uri": "http://127.0.0.1:8008/arrow-commits.arrows"
+        }
+    ]
+}
 ```

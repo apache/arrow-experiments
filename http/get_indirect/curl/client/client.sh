@@ -18,10 +18,11 @@
 # under the License.
 
 
-# use curl to get a JSON listing of filenames, then use jq to
-# extract the filenames from the JSON and construct full URIs
-host=http://localhost:8008/
-uris=$(curl -s -S $host | jq -r --arg host "$host" '.arrow_stream_files[].filename | $host + .')
+# Use curl to get a JSON document containing URIs to
+# Arrow stream files, then use jq to extract the URIs
+uris=$(curl -s -S http://localhost:8008/ | jq -r '.arrow_stream_files[].uri')
 
-# use curl to download the files from the URIs in parallel
-curl --parallel --remote-name-all $(print $uris)
+# Use curl to download the files from the URIs in parallel
+if [ -n "$uris" ]; then
+	curl --parallel --remote-name-all $(print $uris)
+fi

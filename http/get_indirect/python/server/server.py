@@ -24,8 +24,10 @@ mimetypes.add_type("application/vnd.apache.arrow.stream", ".arrows")
 
 class MyServer(SimpleHTTPRequestHandler):
     def list_directory(self, path):
+        host, port = self.server.server_address
+
         try:
-            dir_list = [
+            file_paths = [
                 f for f in os.listdir(path)
                 if f.endswith(".arrows") and os.path.isfile(os.path.join(path, f))
             ]
@@ -33,18 +35,19 @@ class MyServer(SimpleHTTPRequestHandler):
             self.send_error(404, "No permission to list directory")
             return None
 
-        file_list = {"arrow_stream_files": [{"filename": f} for f in dir_list]}
+        file_uris = [f"http://{host}:{port}{self.path}{f}" for f in file_paths]
+        uris_doc = {"arrow_stream_files": [{"uri": f} for f in file_uris]}
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
         self.end_headers()
-        self.wfile.write(json.dumps(file_list, indent=4).encode("utf-8"))
+        self.wfile.write(json.dumps(uris_doc, indent=4).encode("utf-8"))
         return None
 
-server_address = ('localhost', 8008)
+server_address = ("localhost", 8008)
 try:
     httpd = HTTPServer(server_address, MyServer)
-    print(f'Serving on {server_address[0]}:{server_address[1]}...')
+    print(f"Serving on {server_address[0]}:{server_address[1]}...")
     httpd.serve_forever()
 except KeyboardInterrupt:
-    print('Shutting down server')
+    print("Shutting down server")
     httpd.socket.close()

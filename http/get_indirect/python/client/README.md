@@ -17,10 +17,10 @@
   under the License.
 -->
 
-# HTTP GET Arrow Data: Indirect Python Client Example with `requests`
+# HTTP GET Arrow Data: Indirect Python Client Example with Requests
 
-This directory contains an example of an HTTP client implemented in Python using the built-in [`urllib.request`](https://docs.python.org/3/library/urllib.request.html) module. The client:
-1. Sends a GET request to the server to get a JSON listing of the filenames of available `.arrows` files.
+This directory contains an example of an HTTP client implemented in Python using the [Requests](https://requests.readthedocs.io/) library. The client:
+1. Sends a GET request to the server to get a JSON listing of the URIs of available `.arrows` files.
 2. Sends GET requests to download each of the `.arrows` files from the server.
 3. Loads the contents of each file into an in-memory PyArrow Table.
 

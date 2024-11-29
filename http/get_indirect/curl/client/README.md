@@ -20,5 +20,5 @@
 # HTTP GET Arrow Data: Indirect curl Client Example
 
 This directory contains an example of a series of shell commands that use `curl` and `jq` to:
-1. Send a GET request to the server to get a JSON listing of the filenames of available `.arrows` files.
+1. Send a GET request to the server to get a JSON listing of the URIs of a set of `.arrows` files.
 2. Send GET requests to download each of the `.arrows` files from the server to files in the current directory.
