@@ -40,7 +40,7 @@ tables = {}
 
 for uri in uris:
     arrow_response = requests.get(uri)
-    if json_response.status_code == 200 and ARROW_STREAM_FORMAT in arrow_response.headers.get('Content-Type', ''):
+    if arrow_response.status_code == 200 and ARROW_STREAM_FORMAT in arrow_response.headers.get('Content-Type', ''):
         filename = os.path.basename(uri)
         tablename = os.path.splitext(filename)[0]
         with pa.ipc.open_stream(arrow_response.content) as reader:
