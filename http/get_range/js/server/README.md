@@ -30,7 +30,7 @@ cp ../../../../data/rand-many-types/random.arrows .
 Then start the HTTP server to serve this file:
 
 ```sh
-npx --yes serve -l 8008
+npx serve -l 8008
 ```
 
 > [!NOTE]  
