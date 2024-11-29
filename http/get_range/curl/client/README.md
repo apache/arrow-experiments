@@ -20,3 +20,5 @@
 # HTTP GET Arrow Data: Range Request curl Client Example
 
 This directory contains examples of `curl` commands that send HTTP GET requests with the `Range` request header.
+
+To run this example, first start one of the range request server examples in the parent directory, then run the shell commands in `client.sh`.

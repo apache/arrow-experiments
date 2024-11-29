@@ -17,7 +17,7 @@
   under the License.
 -->
 
-# HTTP GET Arrow Data: Range Request JavaScript Server Example
+# HTTP GET Arrow Data: Range Request Node.js Server Example
 
 The example in this directory shows how to use the Node.js package [`serve`](https://www.npmjs.com/package/serve) (which supports range requests) to serve a static Arrow IPC stream file over HTTP.
 
@@ -34,4 +34,4 @@ npx --yes serve -l 8008
 ```
 
 > [!NOTE]  
-> The npm package `serve` _should_ automatically set the `Content-Type` header to `application/vnd.apache.arrow.stream` when serving a file with extension `.arrows`, because [the Arrow IPC stream format is officially registered with IANA](https://www.iana.org/assignments/media-types/application/vnd.apache.arrow.stream). Most web servers including `serve` use registration data from IANA to determine the media type of a file based on its file extension and set the `Content-Type` header to that media type when serving a file with that extension. However, this is not working with `.arrows` files in the `serve` package, seemingly because of a problem with the npm package [`mimedb`](https://github.com/jshttp/mime-db) which `serve` depends on. So the file `serve.json` is used to set the `Content-Type` header correctly when serving `.arrows` files.
+> The npm package `serve` _should_ automatically set the `Content-Type` header to `application/vnd.apache.arrow.stream` when serving a file with extension `.arrows`, because [the Arrow IPC stream format is officially registered with IANA](https://www.iana.org/assignments/media-types/application/vnd.apache.arrow.stream) and most web servers including `serve` use registration data from IANA to determine the media type of a file based on its file extension and set the `Content-Type` header to that media type when serving a file with that extension. However, this is not working with `.arrows` files in the `serve` package, seemingly because of a problem with the npm package [`mimedb`](https://github.com/jshttp/mime-db) which `serve` depends on. So the file `serve.json` is used to set the `Content-Type` header correctly when serving `.arrows` files.
