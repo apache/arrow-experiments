@@ -37,7 +37,7 @@ Then start the HTTP server:
 python server.py
 ```
 
-In this example, the JSON document listing the URIs of the `.arrows` files is structured as shown below. **This JSON structure is provided for example purposes only.** Developers should use different JSON structures in their applications.
+In this example, the JSON document listing the URIs of the `.arrows` files is structured as shown below. **This JSON structure is provided for example purposes only. It is not a recommendation.** Developers should use JSON document structures appropriate to the needs of their applications.
 
 ```json
 {

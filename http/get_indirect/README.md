@@ -24,4 +24,4 @@ This directory contains examples of HTTP clients and servers that use a two-step
 2. The client sends GET requests to each of those URIs and receives a response from each server containing an Arrow IPC stream of record batches (exactly as in the [simple GET examples](https://github.com/apache/arrow-experiments/tree/main/http/get_simple)).
 
 > [!IMPORTANT]  
-> The structure of the JSON document in these examples is provided for example purposes only. Developers should use different JSON document structures in their applications.
+> The structure of the JSON document in these examples is an illustration, not a recommendation. Developers should use JSON document structures appropriate to the needs of their applications.
