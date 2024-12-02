@@ -17,11 +17,16 @@
   under the License.
 -->
 
-# HTTP GET Arrow Data: Indirect Examples
+# HTTP GET Arrow Data: Indirect Python Client Example with Requests
 
-This directory contains examples of HTTP clients and servers that use a two-step sequence to retrieve Arrow data:
-1. The client sends a GET request to a server and receives a JSON response from the server containing one or more server URIs.
-2. The client sends GET requests to each of those URIs and receives a response from each server containing an Arrow IPC stream of record batches (exactly as in the [simple GET examples](https://github.com/apache/arrow-experiments/tree/main/http/get_simple)).
+This directory contains an example of an HTTP client implemented in Python using the [Requests](https://requests.readthedocs.io/) library. The client:
+1. Sends a GET request to the server to get a JSON listing of the URIs of available `.arrows` files.
+2. Sends GET requests to download each of the `.arrows` files from the server.
+3. Loads the contents of each file into an in-memory PyArrow Table.
 
-> [!IMPORTANT]  
-> The structure of the JSON document in these examples is an illustration, not a recommendation. Developers should use JSON document structures appropriate to the needs of their applications.
+To run this example, first start one of the indirect server examples in the parent directory, then:
+
+```sh
+pip install requests pyarrow
+python client.py
+```
