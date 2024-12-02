@@ -1,0 +1,11 @@
+{
+  "headers": [
+    {
+      "source" : "**/*.arrows",
+      "headers" : [{
+        "key" : "Content-Type",
+        "value" : "application/vnd.apache.arrow.stream"
+      }]
+    }
+  ]
+}

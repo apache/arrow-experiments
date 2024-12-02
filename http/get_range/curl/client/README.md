@@ -17,6 +17,8 @@
   under the License.
 -->
 
-# HTTP GET Arrow Data: Range Request Examples
+# HTTP GET Arrow Data: Range Request curl Client Example
 
-This directory contains examples of HTTP servers/clients that send/receive data of known size (`Content-Length`) in the Arrow IPC streaming format and support range requests (`Accept-Ranges: bytes`).
+This directory contains examples of `curl` commands that send HTTP GET requests with the `Range` request header.
+
+To run this example, first start one of the range request server examples in the parent directory, then run the shell commands in `client.sh`.
