@@ -27,14 +27,8 @@ This directory contains a minimal example of an HTTP client implemented in MATLA
 
 To run this example, first start one of the server examples in the parent directory, then:
 
-1. Start MATLAB
+Run the MATLAB `client` script in "batch mode":
 
 ```shell
-$ matlab
-```
-
-2. Run the MATLAB script `client.m`:
-
-```matlab
->> client
+$ matlab -batch client
 ```
