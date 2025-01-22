@@ -29,6 +29,6 @@ To run this example, first start one of the server examples in the parent direct
 
 Run the MATLAB `client` script in "batch mode":
 
-```shell
-$ matlab -batch client
+```sh
+matlab -batch client
 ```
