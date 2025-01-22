@@ -50,7 +50,7 @@ disp("DONE ✔");
 disp("---------------");
 disp("Results")
 disp("---------------");
-disp("Time (s): " + string(time));
+disp("Time (s): " + sprintf("%.2f", time));
 disp("Num Bytes: " + string(nbytes));
 disp("Num Rows:" + string(arrowTable.NumRows));
 disp("Num Columns:" + string(arrowTable.NumColumns));
