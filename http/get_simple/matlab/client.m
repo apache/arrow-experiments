@@ -15,8 +15,8 @@
 % specific language governing permissions and limitations
 % under the License.
 
-% The address of the local HTTP server
-% which returns Arrow IPC Stream responses.
+% The address of the HTTP server that
+% returns Arrow IPC Stream responses.
 server = "http://localhost:8008";
 
 % Diagnostic output.
