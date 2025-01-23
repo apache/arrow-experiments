@@ -25,7 +25,7 @@ This directory contains a set of minimal examples of HTTP clients and servers im
 
 The examples here assume that the server cannot determine the exact length in bytes of the full Arrow IPC stream before sending it, so they cannot set the `Content-Length` header or serve Range requests.
 
-The client examples here assume that the client needs to hold the full received data in memory in an Arrow data structure for further in-memory processing. (The case in which the client simply writes the result directly to a file is much simpler and can be achieved trivially by using [curl](https://curl.se) or similar.)
+Most of the client examples here assume that the client needs to hold the full received data in memory in an Arrow data structure for further in-memory processing. The case in which the client simply writes the result directly to a file is much simpler and is demonstrated by the [curl client example](curl/client).
 
 To enable performance comparisons to Arrow Flight RPC, the server examples generate the data in exactly the same way as in [`flight_benchmark.cc`](https://github.com/apache/arrow/blob/7346bdffbdca36492089f6160534bfa2b81bad90/cpp/src/arrow/flight/flight_benchmark.cc#L194-L245) as cited in the [original blog post introducing Flight RPC](https://arrow.apache.org/blog/2019/10/13/introducing-arrow-flight/). But note that Flight example sends four concurrent streams.
 

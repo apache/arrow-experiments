@@ -20,3 +20,8 @@
 # Apache Arrow Experiments
 
 This repository is for collaborative prototyping and research in the Apache Arrow project.
+
+- **[data](tree/main/data)** contains various datasets that are used by the experiments in this repository or intended to be used in future Arrow experiments.
+- **[dissociated-ipc](tree/main/dissociated-ipc)** contains a reference example implementation of the experimental
+[Arrow Dissociated IPC Protocol](https://arrow.apache.org/docs/dev/format/DissociatedIPC.html).
+- **[http](tree/main/http)** contains a set of examples demonstrating ways of sending and receiving data in Arrow IPC stream format (IANA media type `application/vnd.apache.arrow.stream`) over HTTP APIs.
