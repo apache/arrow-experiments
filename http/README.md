@@ -21,7 +21,7 @@
 
 This area of the Apache Arrow Experiments repository is for collaborative prototyping and research on the subject of sending and receiving data in Arrow IPC stream format (IANA media type `application/vnd.apache.arrow.stream`) over HTTP APIs.
 
-The subdirectories beginning with **get** demonstrate clients receiving data from servers (HTTP GET request). Those beginning with **post** demonstrate clients sending data to servers.
+The subdirectories beginning with **get** demonstrate clients receiving data from servers (HTTP GET request). Those beginning with **post** demonstrate clients sending data to servers (HTTP POST request).
 
 | Subdirectory | Purpose |
 | ------------ | ------- |
