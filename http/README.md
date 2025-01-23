@@ -21,14 +21,17 @@
 
 This area of the Apache Arrow Experiments repository is for collaborative prototyping and research on the subject of sending and receiving data in Arrow IPC stream format (IANA media type `application/vnd.apache.arrow.stream`) over HTTP APIs.
 
-The subdirectories beginning with **get** demonstrate clients receiving data from servers (HTTP GET request). Those beginning with **post** demonstrate clients sending data to servers (. The contents of the subdirectories are as follows:
-- **[get_compressed](get_compressed)** demonstrates various ways of using compression.
-- **[get_indirect](get_indirect)** demonstrates a two-step sequence of receiving Arrow data, in which a JSON document provides the URIs for the Arrow data.
-- **[get_multipart](get_multipart)** demonstrates how to send and receive a multipart HTTP response (`multipart/mixed`) containing Arrow IPC stream data and other data.
-- **[get_range](get_range)** demonstrates how to use HTTP range requests to download Arrow IPC stream data of known length in multiple requests.
-- **[get_simple](get_simple)** contains a large set of examples demonstrating the basics of fetching an Arrow IPC stream from a server to a client in 12+ languages.
-- **[post_multipart](post_multipart)** demonstrates how to send and receive a multipart HTTP request body (`multipart/mixed`) containing Arrow IPC stream data and other data.
-- **[post_simple](post_simple)** demonstrates the basics of sending Arrow IPC stream data from a client to a server.
+The subdirectories beginning with **get** demonstrate clients receiving data from servers (HTTP GET request). Those beginning with **post** demonstrate clients sending data to servers.
+
+| Subdirectory | Purpose |
+|--|--|--|
+| **[get_compressed](get_compressed)** | Demonstrates various ways of using compression |
+| **[get_indirect](get_indirect)** | Demonstrates a two-step sequence of receiving Arrow data, in which a JSON document provides the URIs for the Arrow data |
+| **[get_multipart](get_multipart)** | Demonstrates how to send and receive a multipart HTTP response (`multipart/mixed`) containing Arrow IPC stream data and other data |
+| **[get_range](get_range)** | Demonstrates how to use HTTP range requests to download Arrow IPC stream data of known length in multiple requests |
+| **[get_simple](get_simple)** | Contains a large set of examples demonstrating the basics of fetching an Arrow IPC stream from a server to a client in 12+ languages |
+| **[post_multipart](post_multipart)** | Demonstrates how to send and receive a multipart HTTP request body (`multipart/mixed`) containing Arrow IPC stream data and other data |
+| **[post_simple](post_simple)** | Demonstrates the basics of sending Arrow IPC stream data from a client to a server |
 
 
 The intent of this work is to:
