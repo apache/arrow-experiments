@@ -25,12 +25,12 @@ The subdirectories beginning with **get** demonstrate clients receiving data fro
 
 | Subdirectory | Purpose |
 | ------------ | ------- |
-| **[get_compressed](get_compressed)** | Demonstrates various ways of using compression |
-| **[get_indirect](get_indirect)** | Demonstrates a two-step sequence of receiving Arrow data, in which a JSON document provides the URIs for the Arrow data |
-| **[get_multipart](get_multipart)** | Demonstrates how to send and receive a multipart HTTP response (`multipart/mixed`) containing Arrow IPC stream data and other data |
+| **[get_compressed](get_compressed)** | Demonstrates various ways of using compression when sending and receiving Arrow IPC stream data over HTTP |
+| **[get_indirect](get_indirect)** | Demonstrates a two-step sequence for fetching Arrow data from a server, in which a JSON document provides the URIs for the Arrow data |
+| **[get_multipart](get_multipart)** | Demonstrates how to send and receive a multipart HTTP response body (`multipart/mixed`) containing Arrow IPC stream data and other data |
 | **[get_range](get_range)** | Demonstrates how to use HTTP range requests to download Arrow IPC stream data of known length in multiple requests |
 | **[get_simple](get_simple)** | Contains a large set of examples demonstrating the basics of fetching an Arrow IPC stream from a server to a client in 12+ languages |
-| **[post_multipart](post_multipart)** | Demonstrates how to send and receive a multipart HTTP request body (`multipart/mixed`) containing Arrow IPC stream data and other data |
+| **[post_multipart](post_multipart)** | Demonstrates how to send and receive a multipart HTTP request body (`multipart/form-data`) containing Arrow IPC stream data and other data |
 | **[post_simple](post_simple)** | Demonstrates the basics of sending Arrow IPC stream data from a client to a server |
 
 
