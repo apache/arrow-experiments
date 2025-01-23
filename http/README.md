@@ -24,7 +24,7 @@ This area of the Apache Arrow Experiments repository is for collaborative protot
 The subdirectories beginning with **get** demonstrate clients receiving data from servers (HTTP GET request). Those beginning with **post** demonstrate clients sending data to servers.
 
 | Subdirectory | Purpose |
-|--|--|--|
+| ------------ | ------- |
 | **[get_compressed](get_compressed)** | Demonstrates various ways of using compression |
 | **[get_indirect](get_indirect)** | Demonstrates a two-step sequence of receiving Arrow data, in which a JSON document provides the URIs for the Arrow data |
 | **[get_multipart](get_multipart)** | Demonstrates how to send and receive a multipart HTTP response (`multipart/mixed`) containing Arrow IPC stream data and other data |
