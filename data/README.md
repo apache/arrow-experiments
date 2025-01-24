@@ -19,13 +19,13 @@
 
 # Apache Arrow Data Experiments
 
-This subdirectory contains experimental Arrow data whose purpose has not
-yet become clear but may be useful in the future. This currently includes
-data used to generate compelling examples that is more realistic than
-generated data or the testing data found in
+This directory contains various datasets that are used by the experiments
+in this repository or intended to be used in future Arrow experiments.
+This currently includes data used to generate compelling examples that is
+more realistic than generated data or the testing data found in
 [apache/arrow-testing](http://github.com/apache/arrow-testing). This
-subdirectory is intended as a semi-temporary staging area: eventually,
-data here should find a permanent home elsewhere or be removed.
+directory is intended as a semi-temporary staging area; eventually, much
+of the data here should find a permanent home elsewhere.
 
 > [!IMPORTANT]
 > Please install and use [Git LFS](https://git-lfs.com) when contributing to this subdirectory. Add any new large file extensions to [`.gitattributes`](https://github.com/apache/arrow-experiments/blob/main/.gitattributes).
