@@ -16,5 +16,6 @@
 -- under the License.
 
 .open random.duckdb
-CREATE TABLE random AS SELECT * FROM 'random.parquet';
+DROP TABLE IF EXISTS random;
+CREATE TABLE random AS SELECT * FROM './random.parquet';
 .exit
