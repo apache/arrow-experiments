@@ -14,9 +14,13 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-data/**/*.arrows filter=lfs diff=lfs merge=lfs -text
-data/**/*.arrow filter=lfs diff=lfs merge=lfs -text
-data/**/*.jsonl filter=lfs diff=lfs merge=lfs -text
-data/**/*.parquet filter=lfs diff=lfs merge=lfs -text
-data/**/*.db filter=lfs diff=lfs merge=lfs -text
-data/**/*.duckdb filter=lfs diff=lfs merge=lfs -text
+
+import pyarrow as pa
+import pyarrow.parquet as pq
+
+
+with open("random.arrows", "rb") as f:
+    reader = pa.ipc.open_stream(f)
+    table = reader.read_all()
+
+pq.write_table(table, "random.parquet")
