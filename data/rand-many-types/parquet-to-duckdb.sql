@@ -17,3 +17,4 @@
 
 .open random.duckdb
 CREATE TABLE random AS SELECT * FROM 'random.parquet';
+.exit
