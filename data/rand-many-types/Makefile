@@ -15,9 +15,13 @@
 # specific language governing permissions and limitations
 # under the License.
 
-data/**/*.arrows filter=lfs diff=lfs merge=lfs -text
-data/**/*.arrow filter=lfs diff=lfs merge=lfs -text
-data/**/*.jsonl filter=lfs diff=lfs merge=lfs -text
-data/**/*.parquet filter=lfs diff=lfs merge=lfs -text
-data/**/*.db filter=lfs diff=lfs merge=lfs -text
-data/**/*.duckdb filter=lfs diff=lfs merge=lfs -text
+all: arrow parquet duckdb
+
+arrow: generate.py
+	python ./generate.py
+
+parquet: arrow
+	python ./arrows-to-parquet.py
+
+duckdb: parquet
+	duckdb -f ./parquet-to-duckdb.sql
