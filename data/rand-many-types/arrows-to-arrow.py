@@ -15,16 +15,16 @@
 # specific language governing permissions and limitations
 # under the License.
 
-all: arrows arrow parquet duckdb
+import pyarrow as pa
 
-arrows: generate.py
-	python ./generate.py
 
-arrow: arrows
-	python ./arrows-to-arrow.py
-
-parquet: arrows
-	python ./arrows-to-parquet.py
-
-duckdb: parquet
-	duckdb -f ./parquet-to-duckdb.sql
+with (
+    open("random.arrows", "rb") as f,
+    pa.ipc.open_stream(f) as reader,
+    pa.ipc.new_file("random.arrow", reader.schema) as writer
+):
+    while True:
+        try:
+            writer.write_batch(reader.read_next_batch())
+        except StopIteration:
+            break

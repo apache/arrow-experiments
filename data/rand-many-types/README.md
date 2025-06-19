@@ -21,7 +21,7 @@
 
 This directory contains a file `random.arrows` in Arrow IPC stream format with randomly generated values in 20+ columns exercising many different Arrow data types. The Python script `generate.py` that generated the data file is included.
 
-The same data is also included as a Parquet file (`random.parquet`) and as a DuckDB database file (`random.duckdb`) as the table named `random`. The Python and SQL used to generate these files is included.
+The same data is also included as a file in Arrow IPC file format (`random.arrow`), as a Parquet file (`random.parquet`), and as a DuckDB database file (`random.duckdb`) as the table named `random`. The Python and SQL used to generate these files is included.
 
 To re-generate the data files (for example, if you change `generate.py`),
 
