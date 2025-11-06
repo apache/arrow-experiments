@@ -16,6 +16,6 @@
 -- under the License.
 
 ATTACH 'random.sqlite' AS random (TYPE sqlite);
-DROP TABLE IF EXISTS random;
+DROP TABLE IF EXISTS random.random;
 CREATE TABLE random.random AS SELECT * FROM './random.parquet';
 .exit
