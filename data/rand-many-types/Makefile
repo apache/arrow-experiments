@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-all: arrows arrow parquet duckdb
+all: arrows arrow parquet duckdb sqlite
 
 arrows: generate.py
 	python ./generate.py
@@ -28,3 +28,6 @@ parquet: arrows
 
 duckdb: parquet
 	duckdb -f ./parquet-to-duckdb.sql
+
+sqlite: parquet
+	duckdb -f ./parquet-to-sqlite.sql
